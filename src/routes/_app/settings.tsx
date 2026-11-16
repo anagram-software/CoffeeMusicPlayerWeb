@@ -1,7 +1,10 @@
 import { createFileRoute, useNavigate } from '@tanstack/react-router'
 import { MdLogout } from 'react-icons/md'
 import { Button } from '@/components/ui/button'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import { Switch } from '@/components/ui/switch'
 import { useSessionStore } from '@/stores/session'
+import { maxBitRates, type StreamFormat, streamFormats, useSettingsStore } from '@/stores/settings'
 
 export const Route = createFileRoute('/_app/settings')({
   staticData: { section: 'settings' },
@@ -28,6 +31,8 @@ function SettingsPage() {
         />
       </SettingsGroup>
 
+      <PlaybackSettings />
+
       <SettingsGroup title="Account">
         <Row label="Signed in as" value={user.isAdmin ? `${user.name} (admin)` : user.name} />
         <div className="py-3">
@@ -50,6 +55,45 @@ function SettingsPage() {
   )
 }
 
+function PlaybackSettings() {
+  const { streamFormat, maxBitRate, scrobble, set } = useSettingsStore()
+  return (
+    <SettingsGroup title="Playback">
+      <Row label="Streaming format" description="Original sends files as they are; others ask the server to transcode.">
+        <Select value={streamFormat} onValueChange={(v) => set({ streamFormat: v as StreamFormat })}>
+          <SelectTrigger className="w-36">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent align="end">
+            {Object.entries(streamFormats).map(([value, label]) => (
+              <SelectItem key={value} value={value}>
+                {label}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </Row>
+      <Row label="Maximum bitrate" description="Applies to tracks played after the change.">
+        <Select value={String(maxBitRate)} onValueChange={(v) => set({ maxBitRate: Number(v) as (typeof maxBitRates)[number] })}>
+          <SelectTrigger className="w-36">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent align="end">
+            {maxBitRates.map((b) => (
+              <SelectItem key={b} value={String(b)}>
+                {b === 0 ? 'No limit' : `${b} kbps`}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </Row>
+      <Row label="Scrobble plays" description="Updates play counts and forwards to Last.fm / ListenBrainz if set up in Navidrome.">
+        <Switch checked={scrobble} onCheckedChange={(v) => set({ scrobble: v })} aria-label="Scrobble plays" />
+      </Row>
+    </SettingsGroup>
+  )
+}
+
 /** Uppercase accent-coloured category header, like the Android PreferenceCategory. */
 function SettingsGroup({ title, children }: { title: string; children: React.ReactNode }) {
   return (
@@ -60,11 +104,26 @@ function SettingsGroup({ title, children }: { title: string; children: React.Rea
   )
 }
 
-function Row({ label, value, title }: { label: string; value: string; title?: string }) {
+function Row({
+  label,
+  value,
+  title,
+  description,
+  children,
+}: {
+  label: string
+  value?: string
+  title?: string
+  description?: string
+  children?: React.ReactNode
+}) {
   return (
-    <div className="flex items-baseline justify-between gap-4 py-3" title={title}>
-      <span className="text-sm">{label}</span>
-      <span className="truncate text-sm text-muted-foreground">{value}</span>
+    <div className="flex items-center justify-between gap-4 py-3" title={title}>
+      <div className="min-w-0">
+        <div className="text-sm">{label}</div>
+        {description && <div className="mt-0.5 text-xs text-muted-foreground">{description}</div>}
+      </div>
+      {children ?? <span className="truncate text-sm text-muted-foreground">{value}</span>}
     </div>
   )
 }

@@ -5,6 +5,8 @@ import { SONG_ROW_HEIGHT, SongRow } from '@/components/library/SongRow'
 import { EmptyState, ErrorState, ListSkeleton } from '@/components/library/states'
 import { VirtualList } from '@/components/library/VirtualList'
 import { songListQuery } from '@/lib/subsonic/queries'
+import { player } from '@/player/engine'
+import { toTrack } from '@/player/queue'
 import { getClient, useSubsonic } from '@/stores/session'
 
 export const Route = createFileRoute('/_app/library/songs')({
@@ -31,7 +33,7 @@ function SongsTab() {
           items={query.data}
           getKey={(s) => s.id}
           rowHeight={SONG_ROW_HEIGHT}
-          renderItem={(s) => <SongRow song={s} />}
+          renderItem={(s, i) => <SongRow song={s} onPlay={() => player.playQueue(query.data.map(toTrack), i)} />}
           hasMore={query.hasNextPage && !query.isFetchingNextPage}
           onLoadMore={query.fetchNextPage}
         />

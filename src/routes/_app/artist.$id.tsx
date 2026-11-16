@@ -7,7 +7,10 @@ import { SongRow } from '@/components/library/SongRow'
 import { ErrorState, ListSkeleton, SectionTitle } from '@/components/library/states'
 import { plural, stripHtml } from '@/lib/format'
 import { artistInfoQuery, artistQuery, topSongsQuery } from '@/lib/subsonic/queries'
+import { player } from '@/player/engine'
+import { toTrack } from '@/player/queue'
 import { getClient, useSubsonic } from '@/stores/session'
+import { PlayActions } from '@/components/library/PlayActions'
 
 export const Route = createFileRoute('/_app/artist/$id')({
   staticData: { section: 'library' },
@@ -40,7 +43,10 @@ function ArtistPage() {
         fallback="person"
         title={artist.name}
         tags={[plural(albums.length, 'album'), plural(songCount, 'song')]}
-      />
+      >
+        {/* Plays the top songs; Navidrome only has them when Last.fm is configured. */}
+        {top.data && top.data.length > 0 && <PlayActions tracks={top.data.map(toTrack)} />}
+      </DetailHeader>
 
       <div className="flex flex-col gap-10 px-4 md:px-6">
         {info.data?.biography && <Biography html={info.data.biography} lastFmUrl={info.data.lastFmUrl} />}
@@ -50,7 +56,7 @@ function ArtistPage() {
             <SectionTitle>Top songs</SectionTitle>
             <div className="-mx-2">
               {top.data.map((s, i) => (
-                <SongRow key={s.id} song={s} lead="index" index={i} />
+                <SongRow key={s.id} song={s} lead="index" index={i} onPlay={() => player.playQueue(top.data.map(toTrack), i)} />
               ))}
             </div>
           </section>

@@ -1,12 +1,19 @@
+import { useQueryClient } from '@tanstack/react-query'
 import { Link } from '@tanstack/react-router'
+import type { ReactNode } from 'react'
+import { MdPlayArrow } from 'react-icons/md'
 import type { AlbumID3, ArtistID3 } from 'subsonic-api'
 import { CoverArt } from '@/components/CoverArt'
+import { albumQuery } from '@/lib/subsonic/queries'
+import { player } from '@/player/engine'
+import { toTrack } from '@/player/queue'
+import { useSubsonic } from '@/stores/session'
 
 /**
  * Square art card with the title on a gradient overlay, like the Android
  * griditem.xml. Used for both albums and artists.
  */
-function GridCard({ coverArt, title, subtitle, fallback }: { coverArt?: string; title: string; subtitle?: string; fallback?: 'music' | 'person' }) {
+function GridCard({ coverArt, title, subtitle, fallback, action }: { coverArt?: string; title: string; subtitle?: string; fallback?: 'music' | 'person'; action?: ReactNode }) {
   return (
     <div className="group relative aspect-square overflow-hidden rounded-md shadow-md shadow-black/30">
       <CoverArt
@@ -16,9 +23,12 @@ function GridCard({ coverArt, title, subtitle, fallback }: { coverArt?: string; 
         fallback={fallback}
         className="size-full transition-transform duration-300 group-hover:scale-105"
       />
-      <div className="absolute inset-x-0 bottom-0 bg-linear-to-t from-black/85 via-black/45 to-transparent px-3 pt-10 pb-2.5">
-        <div className="truncate text-sm font-medium text-white">{title}</div>
-        {subtitle && <div className="truncate text-xs text-white/70">{subtitle}</div>}
+      <div className="absolute inset-x-0 bottom-0 flex items-end gap-2 bg-linear-to-t from-black/85 via-black/45 to-transparent px-3 pt-10 pb-2.5">
+        <div className="min-w-0 flex-1">
+          <div className="truncate text-sm font-medium text-white">{title}</div>
+          {subtitle && <div className="truncate text-xs text-white/70">{subtitle}</div>}
+        </div>
+        {action}
       </div>
       <div className="pointer-events-none absolute inset-0 rounded-md ring-1 ring-white/5 ring-inset" />
     </div>
@@ -26,9 +36,35 @@ function GridCard({ coverArt, title, subtitle, fallback }: { coverArt?: string; 
 }
 
 export function AlbumCard({ album }: { album: AlbumID3 }) {
+  const client = useSubsonic()
+  const queryClient = useQueryClient()
+
+  // Like the Android griditem's play button: play the album without opening it.
+  const play = async (e: React.MouseEvent) => {
+    e.preventDefault()
+    e.stopPropagation()
+    const full = await queryClient.fetchQuery(albumQuery(client, album.id))
+    player.playQueue((full.song ?? []).map(toTrack), 0, { shuffle: false })
+  }
+
   return (
     <Link to="/album/$id" params={{ id: album.id }} className="block rounded-md focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none" title={album.name}>
-      <GridCard coverArt={album.coverArt} title={album.name} subtitle={album.displayArtist ?? album.artist} />
+      <GridCard
+        coverArt={album.coverArt}
+        title={album.name}
+        subtitle={album.displayArtist ?? album.artist}
+        action={
+          <span
+            role="button"
+            tabIndex={-1}
+            onClick={play}
+            aria-label={`Play ${album.name}`}
+            className="flex size-9 shrink-0 translate-y-1 items-center justify-center rounded-full bg-white text-black opacity-0 shadow-lg transition-all group-hover:translate-y-0 group-hover:opacity-100 hover:scale-105 max-md:hidden"
+          >
+            <MdPlayArrow className="size-6" />
+          </span>
+        }
+      />
     </Link>
   )
 }

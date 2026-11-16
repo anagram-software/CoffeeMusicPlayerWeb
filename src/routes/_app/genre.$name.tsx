@@ -7,7 +7,10 @@ import { ErrorState, GridSkeleton, ListSkeleton, SectionTitle } from '@/componen
 import { VirtualList } from '@/components/library/VirtualList'
 import { plural } from '@/lib/format'
 import { genreAlbumsQuery, genreListQuery, genreSongsQuery } from '@/lib/subsonic/queries'
+import { player } from '@/player/engine'
+import { toTrack } from '@/player/queue'
 import { getClient, useSubsonic } from '@/stores/session'
+import { PlayActions } from '@/components/library/PlayActions'
 
 export const Route = createFileRoute('/_app/genre/$name')({
   staticData: { section: 'library' },
@@ -29,7 +32,9 @@ function GenrePage() {
         coverArt={albums.data?.[0]?.coverArt}
         title={name}
         tags={genre.data ? [plural(genre.data.albumCount, 'album'), plural(genre.data.songCount, 'song')] : []}
-      />
+      >
+        <PlayActions tracks={songs.data?.map(toTrack) ?? []} disabled={songs.isPending} />
+      </DetailHeader>
 
       <div className="flex flex-col gap-10 px-4 md:px-6">
         <section>
@@ -60,7 +65,7 @@ function GenrePage() {
               items={songs.data}
               getKey={(s) => s.id}
               rowHeight={SONG_ROW_HEIGHT}
-              renderItem={(s) => <SongRow song={s} />}
+              renderItem={(s, i) => <SongRow song={s} onPlay={() => player.playQueue(songs.data.map(toTrack), i)} />}
               hasMore={songs.hasNextPage && !songs.isFetchingNextPage}
               onLoadMore={songs.fetchNextPage}
             />

@@ -6,7 +6,10 @@ import { SongRow } from '@/components/library/SongRow'
 import { ErrorState, ListSkeleton } from '@/components/library/states'
 import { formatTotalDuration, plural } from '@/lib/format'
 import { albumQuery } from '@/lib/subsonic/queries'
+import { player } from '@/player/engine'
+import { toTrack } from '@/player/queue'
 import { getClient, useSubsonic } from '@/stores/session'
+import { PlayActions } from '@/components/library/PlayActions'
 
 export const Route = createFileRoute('/_app/album/$id')({
   staticData: { section: 'library' },
@@ -25,6 +28,9 @@ function AlbumPage() {
   const songs = album.song ?? []
   const discs = groupByDisc(songs)
   const albumArtist = album.displayArtist ?? album.artist
+  // Play in displayed (disc, track) order.
+  const ordered = discs.flatMap(([, tracks]) => tracks)
+  const tracks = ordered.map(toTrack)
 
   return (
     <div className="pb-10">
@@ -42,7 +48,9 @@ function AlbumPage() {
           )
         }
         tags={[album.year ? String(album.year) : undefined, album.genre, plural(album.songCount, 'song'), formatTotalDuration(album.duration)]}
-      />
+      >
+        <PlayActions tracks={tracks} />
+      </DetailHeader>
 
       <div className="px-2 md:px-4">
         {discs.map(([disc, tracks]) => (
@@ -54,7 +62,7 @@ function AlbumPage() {
               </h2>
             )}
             {tracks.map((s) => (
-              <SongRow key={s.id} song={s} lead="track" hideAlbum />
+              <SongRow key={s.id} song={s} lead="track" hideAlbum onPlay={() => player.playQueue(tracks, ordered.indexOf(s))} />
             ))}
           </section>
         ))}

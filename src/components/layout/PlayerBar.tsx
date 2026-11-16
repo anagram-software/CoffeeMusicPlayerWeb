@@ -1,39 +1,82 @@
-import { MdFavoriteBorder, MdMusicNote, MdPlayArrow, MdSkipNext, MdSkipPrevious } from 'react-icons/md'
+import { MdExpandLess, MdQueueMusic } from 'react-icons/md'
+import { CoverArt } from '@/components/CoverArt'
+import { NextButton, PlayPauseButton, PreviousButton, RepeatButton, SeekBar, ShuffleButton, VolumeControl } from '@/components/player/controls'
 import { Button } from '@/components/ui/button'
+import { useArtColor } from '@/lib/artColor'
+import { useCurrentTrack, usePlayerStore } from '@/player/store'
 
 /**
- * Mini player, modelled on the Android frag_mini_player. Static for now;
- * the playback engine is wired up in phase 3.
+ * Bottom player bar. On mobile it's the Android mini player (art, title,
+ * play/next, progress line on top); on desktop it adds the seek bar,
+ * shuffle/repeat, volume and queue. Tapping the track opens the full player.
  */
 export function PlayerBar() {
+  const track = useCurrentTrack()
+  const tint = useArtColor(track?.coverArt)
+  const progress = usePlayerStore((s) => (s.duration ? (s.currentTime / s.duration) * 100 : 0))
+  const openFull = (queue = false) => usePlayerStore.setState({ fullPlayerOpen: true, queueOpen: queue })
+
   return (
-    <footer className="relative border-t border-border bg-card">
-      {/* Progress line along the top edge */}
-      <div className="absolute inset-x-0 top-0 h-0.5 bg-white/5">
-        <div className="h-full w-0 bg-white" />
+    <footer
+      className="relative border-t border-border bg-card transition-colors duration-700"
+      style={tint ? { backgroundColor: `color-mix(in oklab, ${tint} 45%, var(--card))` } : undefined}
+    >
+      {/* Mobile progress line along the top edge */}
+      <div className="absolute inset-x-0 top-0 h-0.5 bg-white/10 md:hidden">
+        <div className="h-full bg-white" style={{ width: `${progress}%` }} />
       </div>
 
-      <div className="flex h-16 items-center gap-3 px-3 md:h-20 md:px-5">
-        <div className="flex size-11 shrink-0 items-center justify-center rounded bg-art md:size-14">
-          <MdMusicNote className="size-6 text-white/40" />
-        </div>
-        <div className="min-w-0 flex-1">
-          <div className="truncate text-sm font-medium">Nothing playing</div>
-          <div className="truncate text-xs text-muted-foreground">Pick something from your library</div>
+      <div className="flex h-16 items-center gap-3 px-3 md:grid md:h-20 md:grid-cols-[1fr_minmax(0,36rem)_1fr] md:gap-6 md:px-5">
+        {/* Track info: opens the full player */}
+        <button
+          type="button"
+          onClick={() => track && openFull()}
+          disabled={!track}
+          className="group flex min-w-0 flex-1 items-center gap-3 text-left"
+          aria-label="Open player"
+        >
+          <div className="relative shrink-0">
+            <CoverArt id={track?.coverArt} size={112} className="size-11 rounded md:size-14" />
+            {track && (
+              <div className="absolute inset-0 hidden items-center justify-center rounded bg-black/50 opacity-0 transition-opacity group-hover:opacity-100 md:flex">
+                <MdExpandLess className="size-7" />
+              </div>
+            )}
+          </div>
+          <div className="min-w-0">
+            <div className="truncate text-sm font-medium">{track?.title ?? 'Nothing playing'}</div>
+            <div className="truncate text-xs text-white/60">
+              {track ? [track.artist, track.album].filter(Boolean).join(' • ') : 'Pick something from your library'}
+            </div>
+          </div>
+        </button>
+
+        {/* Desktop centre: transport + seek */}
+        <div className="hidden flex-col items-center gap-1 md:flex">
+          <div className="flex items-center gap-2">
+            <ShuffleButton />
+            <PreviousButton />
+            <PlayPauseButton size="sm" />
+            <NextButton />
+            <RepeatButton />
+          </div>
+          <SeekBar compact className="w-full" />
         </div>
 
-        <div className="flex items-center gap-1">
-          <Button variant="ghost" size="icon-lg" disabled aria-label="Favorite" className="hidden sm:inline-flex">
-            <MdFavoriteBorder className="size-5" />
-          </Button>
-          <Button variant="ghost" size="icon-lg" disabled aria-label="Previous" className="hidden sm:inline-flex">
-            <MdSkipPrevious className="size-6" />
-          </Button>
-          <Button size="icon-lg" disabled aria-label="Play" className="size-10 rounded-full bg-white text-black hover:bg-white/90">
-            <MdPlayArrow className="size-6" />
-          </Button>
-          <Button variant="ghost" size="icon-lg" disabled aria-label="Next">
-            <MdSkipNext className="size-6" />
+        {/* Mobile: play + next. Desktop: volume + queue */}
+        <div className="flex items-center justify-end gap-1">
+          <PlayPauseButton size="sm" className="md:hidden" />
+          <NextButton className="md:hidden" />
+          <VolumeControl className="hidden lg:flex" />
+          <Button
+            variant="ghost"
+            size="icon-lg"
+            className="hidden md:inline-flex"
+            disabled={!track}
+            onClick={() => openFull(true)}
+            aria-label="Queue"
+          >
+            <MdQueueMusic className="size-5" />
           </Button>
         </div>
       </div>

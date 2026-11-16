@@ -1,7 +1,12 @@
 import { Navigate, Outlet } from '@tanstack/react-router'
+import { AnimatePresence } from 'motion/react'
 import { useEffect, useState } from 'react'
+import { FullPlayer } from '@/components/player/FullPlayer'
+import { usePlayerShortcuts } from '@/hooks/usePlayerShortcuts'
 import { useCurrentSection } from '@/hooks/useCurrentSection'
 import { sections } from '@/lib/sections'
+import { initPlayer } from '@/player/engine'
+import { usePlayerStore } from '@/player/store'
 import { useSessionStore } from '@/stores/session'
 import { PlayerBar } from './PlayerBar'
 import { ScrollElementContext } from './scrollElement'
@@ -13,6 +18,13 @@ export function AppShell() {
   const hasSession = useSessionStore((s) => !!s.session)
   const [drawerOpen, setDrawerOpen] = useState(false)
   const [scrollEl, setScrollEl] = useState<HTMLElement | null>(null)
+  const fullPlayerOpen = usePlayerStore((s) => s.fullPlayerOpen)
+
+  // The engine needs the session for stream URLs, so it starts here, not at app load.
+  useEffect(() => {
+    if (hasSession) initPlayer()
+  }, [hasSession])
+  usePlayerShortcuts()
 
   // Set on <html> (not a wrapper div) so portaled UI like dialogs, sheets
   // and toasts also picks up the section accent.
@@ -45,6 +57,8 @@ export function AppShell() {
       <div className="md:col-span-2">
         <PlayerBar />
       </div>
+
+      <AnimatePresence>{fullPlayerOpen && <FullPlayer />}</AnimatePresence>
     </div>
   )
 }

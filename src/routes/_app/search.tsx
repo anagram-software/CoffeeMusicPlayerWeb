@@ -8,6 +8,8 @@ import { SongRow } from '@/components/library/SongRow'
 import { EmptyState, ErrorState, ListSkeleton, SectionTitle } from '@/components/library/states'
 import { useDebouncedValue } from '@/hooks/useDebouncedValue'
 import { searchQuery } from '@/lib/subsonic/queries'
+import { player } from '@/player/engine'
+import { toTrack } from '@/player/queue'
 import { useSubsonic } from '@/stores/session'
 
 export const Route = createFileRoute('/_app/search')({
@@ -70,8 +72,8 @@ function SearchPage() {
             <section>
               <SectionTitle>Songs</SectionTitle>
               <div className="-mx-2">
-                {results!.songs.map((s) => (
-                  <SongRow key={s.id} song={s} />
+                {results!.songs.map((s, i) => (
+                  <SongRow key={s.id} song={s} onPlay={() => player.playQueue(results!.songs.map(toTrack), i)} />
                 ))}
               </div>
             </section>
