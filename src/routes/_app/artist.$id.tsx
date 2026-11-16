@@ -44,8 +44,8 @@ function ArtistPage() {
         title={artist.name}
         tags={[plural(albums.length, 'album'), plural(songCount, 'song')]}
       >
-        {/* Plays the top songs; Navidrome only has them when Last.fm is configured. */}
-        {top.data && top.data.length > 0 && <PlayActions tracks={top.data.map(toTrack)} />}
+        {/* Plays the top songs (Navidrome has them only when Last.fm is configured). */}
+        <PlayActions tracks={top.data?.map(toTrack) ?? []} star={{ kind: 'artist', id: artist.id, starred: artist.starred }} />
       </DetailHeader>
 
       <div className="flex flex-col gap-10 px-4 md:px-6">

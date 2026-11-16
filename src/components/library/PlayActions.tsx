@@ -1,11 +1,25 @@
 import { MdPlayArrow, MdShuffle } from 'react-icons/md'
+import { StarButton } from '@/components/StarButton'
 import { Button } from '@/components/ui/button'
+import type { StarKind } from '@/lib/subsonic/stars'
 import { player } from '@/player/engine'
 import type { Track } from '@/player/queue'
 import { TrackMenu } from './TrackMenu'
 
 /** Play / Shuffle / ⋮ buttons for detail page headers. */
-export function PlayActions({ tracks, disabled }: { tracks: Track[]; disabled?: boolean }) {
+export function PlayActions({
+  tracks,
+  disabled,
+  star,
+  children,
+}: {
+  tracks: Track[]
+  disabled?: boolean
+  /** Shows a heart for the album/artist itself. */
+  star?: { kind: StarKind; id: string; starred: unknown }
+  /** Extra buttons (e.g. a playlist's edit menu). */
+  children?: React.ReactNode
+}) {
   const empty = disabled || tracks.length === 0
   return (
     <div className="mt-3 flex items-center gap-2">
@@ -21,7 +35,9 @@ export function PlayActions({ tracks, disabled }: { tracks: Track[]; disabled?: 
       >
         <MdShuffle className="size-5" /> Shuffle
       </Button>
+      {star && <StarButton {...star} />}
       {!empty && <TrackMenu getTracks={() => tracks} className="text-white" />}
+      {children}
     </div>
   )
 }

@@ -1,5 +1,6 @@
 import { MdExpandLess, MdQueueMusic } from 'react-icons/md'
 import { CoverArt } from '@/components/CoverArt'
+import { StarButton } from '@/components/StarButton'
 import { NextButton, PlayPauseButton, PreviousButton, RepeatButton, SeekBar, ShuffleButton, VolumeControl } from '@/components/player/controls'
 import { Button } from '@/components/ui/button'
 import { useArtColor } from '@/lib/artColor'
@@ -28,28 +29,31 @@ export function PlayerBar() {
 
       <div className="flex h-16 items-center gap-3 px-3 md:grid md:h-20 md:grid-cols-[1fr_minmax(0,36rem)_1fr] md:gap-6 md:px-5">
         {/* Track info: opens the full player */}
-        <button
-          type="button"
-          onClick={() => track && openFull()}
-          disabled={!track}
-          className="group flex min-w-0 flex-1 items-center gap-3 text-left"
-          aria-label="Open player"
-        >
-          <div className="relative shrink-0">
-            <CoverArt id={track?.coverArt} size={112} className="size-11 rounded md:size-14" />
-            {track && (
-              <div className="absolute inset-0 hidden items-center justify-center rounded bg-black/50 opacity-0 transition-opacity group-hover:opacity-100 md:flex">
-                <MdExpandLess className="size-7" />
-              </div>
-            )}
-          </div>
-          <div className="min-w-0">
-            <div className="truncate text-sm font-medium">{track?.title ?? 'Nothing playing'}</div>
-            <div className="truncate text-xs text-white/60">
-              {track ? [track.artist, track.album].filter(Boolean).join(' • ') : 'Pick something from your library'}
+        <div className="flex min-w-0 flex-1 items-center gap-2">
+          <button
+            type="button"
+            onClick={() => track && openFull()}
+            disabled={!track}
+            className="group flex min-w-0 items-center gap-3 text-left"
+            aria-label="Open player"
+          >
+            <div className="relative shrink-0">
+              <CoverArt id={track?.coverArt} size={112} className="size-11 rounded md:size-14" />
+              {track && (
+                <div className="absolute inset-0 hidden items-center justify-center rounded bg-black/50 opacity-0 transition-opacity group-hover:opacity-100 md:flex">
+                  <MdExpandLess className="size-7" />
+                </div>
+              )}
             </div>
-          </div>
-        </button>
+            <div className="min-w-0">
+              <div className="truncate text-sm font-medium">{track?.title ?? 'Nothing playing'}</div>
+              <div className="truncate text-xs text-white/60">
+                {track ? [track.artist, track.album].filter(Boolean).join(' • ') : 'Pick something from your library'}
+              </div>
+            </div>
+          </button>
+          {track && <StarButton kind="song" id={track.id} starred={track.starred} className="hidden shrink-0 md:inline-flex" />}
+        </div>
 
         {/* Desktop centre: transport + seek */}
         <div className="hidden flex-col items-center gap-1 md:flex">

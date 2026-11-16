@@ -4,7 +4,8 @@ import type { ReactNode } from 'react'
 import { MdPlayArrow } from 'react-icons/md'
 import type { AlbumID3, ArtistID3 } from 'subsonic-api'
 import { CoverArt } from '@/components/CoverArt'
-import { albumQuery } from '@/lib/subsonic/queries'
+import { plural } from '@/lib/format'
+import { albumQuery, type PlaylistInfo } from '@/lib/subsonic/queries'
 import { player } from '@/player/engine'
 import { toTrack } from '@/player/queue'
 import { useSubsonic } from '@/stores/session'
@@ -13,7 +14,7 @@ import { useSubsonic } from '@/stores/session'
  * Square art card with the title on a gradient overlay, like the Android
  * griditem.xml. Used for both albums and artists.
  */
-function GridCard({ coverArt, title, subtitle, fallback, action }: { coverArt?: string; title: string; subtitle?: string; fallback?: 'music' | 'person'; action?: ReactNode }) {
+export function GridCard({ coverArt, title, subtitle, fallback, action }: { coverArt?: string; title: string; subtitle?: string; fallback?: 'music' | 'person'; action?: ReactNode }) {
   return (
     <div className="group relative aspect-square overflow-hidden rounded-md shadow-md shadow-black/30">
       <CoverArt
@@ -77,6 +78,18 @@ export function ArtistCard({ artist }: { artist: ArtistID3 }) {
         title={artist.name}
         subtitle={artist.albumCount ? `${artist.albumCount} album${artist.albumCount === 1 ? '' : 's'}` : undefined}
         fallback="person"
+      />
+    </Link>
+  )
+}
+
+export function PlaylistCard({ playlist, showOwner }: { playlist: PlaylistInfo; showOwner?: boolean }) {
+  return (
+    <Link to="/playlist/$id" params={{ id: playlist.id }} className="block rounded-md focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none" title={playlist.name}>
+      <GridCard
+        coverArt={playlist.coverArt}
+        title={playlist.name}
+        subtitle={[plural(playlist.songCount, 'song'), showOwner && playlist.owner ? `by ${playlist.owner}` : null].filter(Boolean).join(' · ')}
       />
     </Link>
   )

@@ -3,6 +3,8 @@ import { motion, useDragControls } from 'motion/react'
 import { useEffect } from 'react'
 import { MdKeyboardArrowDown, MdQueueMusic } from 'react-icons/md'
 import { CoverArt } from '@/components/CoverArt'
+import { TrackMenu } from '@/components/library/TrackMenu'
+import { StarButton } from '@/components/StarButton'
 import { useMediaQuery } from '@/hooks/useMediaQuery'
 import { Button } from '@/components/ui/button'
 import { useArtColor } from '@/lib/artColor'
@@ -99,13 +101,18 @@ export function FullPlayer() {
           {queueOpen && !wide && <QueueList className="w-full flex-1" />}
 
           <div className="flex w-full max-w-xl shrink-0 flex-col gap-4">
-            <div className="min-w-0 text-center">
-              <h2 className="truncate text-2xl font-light md:text-3xl">{track.title}</h2>
-              <p className="mt-1 truncate text-sm text-white/70">
-                <TrackLink to="artist" id={track.artistId} label={track.artist} />
-                {track.album && ' • '}
-                <TrackLink to="album" id={track.albumId} label={track.album} />
-              </p>
+            {/* Heart · title · menu, as in the Android player */}
+            <div className="flex items-center gap-2">
+              <StarButton kind="song" id={track.id} starred={track.starred} />
+              <div className="min-w-0 flex-1 text-center">
+                <h2 className="truncate text-2xl font-light md:text-3xl">{track.title}</h2>
+                <p className="mt-1 truncate text-sm text-white/70">
+                  <TrackLink to="artist" id={track.artistId} label={track.artist} />
+                  {track.album && ' • '}
+                  <TrackLink to="album" id={track.albumId} label={track.album} />
+                </p>
+              </div>
+              <TrackMenu getTracks={() => [track]} className="text-white/70 hover:bg-white/10 hover:text-white" />
             </div>
 
             <div className="flex flex-col gap-1.5">

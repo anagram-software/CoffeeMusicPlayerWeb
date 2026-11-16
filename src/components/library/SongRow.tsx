@@ -1,4 +1,5 @@
 import { Link } from '@tanstack/react-router'
+import type { ReactNode } from 'react'
 import type { Child } from 'subsonic-api'
 import { CoverArt } from '@/components/CoverArt'
 import { PlayingBars } from '@/components/PlayingBars'
@@ -18,10 +19,12 @@ interface SongRowProps {
   /** Hide the album name in the subtitle (e.g. on the album page itself). */
   hideAlbum?: boolean
   onPlay?: () => void
+  /** Extra ⋮ menu items, e.g. "Remove from playlist". */
+  menuExtra?: ReactNode
 }
 
 /** A song row, modelled on the Android song.xml / albumsongitem.xml. Click to play. */
-export function SongRow({ song, lead = 'art', index, hideAlbum, onPlay }: SongRowProps) {
+export function SongRow({ song, lead = 'art', index, hideAlbum, onPlay, menuExtra }: SongRowProps) {
   const artist = song.displayArtist ?? song.artist
   const isCurrent = usePlayerStore((s) => s.queue[s.index]?.track.id === song.id)
   const isPlaying = usePlayerStore((s) => s.playing)
@@ -92,6 +95,8 @@ export function SongRow({ song, lead = 'art', index, hideAlbum, onPlay }: SongRo
       <div className="shrink-0 text-xs text-muted-foreground tabular-nums">{formatDuration(song.duration)}</div>
       <TrackMenu
         getTracks={() => [toTrack(song)]}
+        song={{ id: song.id, starred: song.starred }}
+        extraItems={menuExtra}
         albumId={hideAlbum ? undefined : song.albumId}
         artistId={song.artistId}
         className="-mr-1 shrink-0 text-muted-foreground opacity-0 group-hover:opacity-100 focus-visible:opacity-100 data-[state=open]:opacity-100 max-md:opacity-100"

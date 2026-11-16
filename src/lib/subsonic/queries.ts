@@ -6,6 +6,10 @@ import type {
   ArtistsID3,
   ArtistWithAlbumsID3,
   Genres,
+  Playlist,
+  Playlists,
+  PlaylistWithSongs,
+  Starred2,
   SearchResult3,
   Songs,
   TopSongs,
@@ -165,3 +169,50 @@ export const searchQuery = (c: SubsonicClient, query: string) =>
     enabled: query.trim().length > 0,
   })
 
+
+/** A short album list for Home rows ("Recently added", "Most played", …). */
+export const albumPreviewQuery = (c: SubsonicClient, sort: AlbumSort, size = 18) =>
+  queryOptions({
+    queryKey: ['albumPreview', sort, size],
+    queryFn: async ({ signal }) => {
+      const r = await c.get<{ albumList2: AlbumList2 }>('getAlbumList2', { ...albumListParams(sort), size }, { signal })
+      return r.albumList2.album ?? []
+    },
+    staleTime: sort === 'random' ? Infinity : undefined,
+  })
+
+export const randomSongsQuery = (c: SubsonicClient, size = 100) =>
+  queryOptions({
+    queryKey: ['randomSongs', size],
+    queryFn: async ({ signal }) =>
+      (await c.get<{ randomSongs: Songs }>('getRandomSongs', { size }, { signal })).randomSongs.song ?? [],
+    staleTime: 0,
+  })
+
+export const starredQuery = (c: SubsonicClient) =>
+  queryOptions({
+    queryKey: ['starred'],
+    queryFn: async ({ signal }) => {
+      const r = await c.get<{ starred2: Starred2 }>('getStarred2', {}, { signal })
+      return { songs: r.starred2.song ?? [], albums: r.starred2.album ?? [], artists: r.starred2.artist ?? [] }
+    },
+  })
+
+/** Navidrome adds `readonly` (smart playlists, or playlists owned by someone else). */
+export type PlaylistInfo = Playlist & { readonly?: boolean }
+
+export const playlistsQuery = (c: SubsonicClient) =>
+  queryOptions({
+    queryKey: ['playlists'],
+    queryFn: async ({ signal }) =>
+      ((await c.get<{ playlists: Playlists }>('getPlaylists', {}, { signal })).playlists.playlist ?? []) as PlaylistInfo[],
+  })
+
+export const playlistQuery = (c: SubsonicClient, id: string) =>
+  queryOptions({
+    queryKey: ['playlist', id],
+    queryFn: async ({ signal }) =>
+      (await c.get<{ playlist: PlaylistWithSongs }>('getPlaylist', { id }, { signal })).playlist as PlaylistWithSongs & {
+        readonly?: boolean
+      },
+  })

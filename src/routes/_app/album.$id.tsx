@@ -29,7 +29,7 @@ function AlbumPage() {
   const discs = groupByDisc(songs)
   const albumArtist = album.displayArtist ?? album.artist
   // Play in displayed (disc, track) order.
-  const ordered = discs.flatMap(([, tracks]) => tracks)
+  const ordered = discs.flatMap(([, songs]) => songs)
   const tracks = ordered.map(toTrack)
 
   return (
@@ -49,11 +49,11 @@ function AlbumPage() {
         }
         tags={[album.year ? String(album.year) : undefined, album.genre, plural(album.songCount, 'song'), formatTotalDuration(album.duration)]}
       >
-        <PlayActions tracks={tracks} />
+        <PlayActions tracks={tracks} star={{ kind: 'album', id: album.id, starred: album.starred }} />
       </DetailHeader>
 
       <div className="px-2 md:px-4">
-        {discs.map(([disc, tracks]) => (
+        {discs.map(([disc, discSongs]) => (
           <section key={disc}>
             {discs.length > 1 && (
               <h2 className="px-4 pt-4 pb-1 text-xs font-medium tracking-wider text-section uppercase">
@@ -61,7 +61,7 @@ function AlbumPage() {
                 {album.discTitles?.find((d) => d.disc === disc)?.title ? ` · ${album.discTitles.find((d) => d.disc === disc)!.title}` : ''}
               </h2>
             )}
-            {tracks.map((s) => (
+            {discSongs.map((s) => (
               <SongRow key={s.id} song={s} lead="track" hideAlbum onPlay={() => player.playQueue(tracks, ordered.indexOf(s))} />
             ))}
           </section>

@@ -11,6 +11,7 @@ export interface Track {
   coverArt?: string
   duration?: number
   year?: number
+  starred?: boolean
 }
 
 /** A queue entry. `qid` is unique even when the same song is queued twice. */
@@ -32,6 +33,7 @@ export function toTrack(c: Child): Track {
     coverArt: c.coverArt,
     duration: c.duration,
     year: c.year,
+    starred: !!c.starred,
   }
 }
 
