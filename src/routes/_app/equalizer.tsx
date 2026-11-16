@@ -22,9 +22,11 @@ function EqualizerPage() {
   const { enabled, preset, gains, bassBoost, virtualizer, reverb } = useEffectsStore()
 
   const toggle = (on: boolean) => {
-    // This click is the user gesture browsers require before starting Web Audio.
-    if (on) player.enableEffects()
     set({ enabled: on })
+    // On: this click is the user gesture browsers require to start Web Audio.
+    // Off: take Web Audio out of the playback path completely.
+    if (on) player.enableEffects()
+    else player.disableEffects()
   }
 
   return (

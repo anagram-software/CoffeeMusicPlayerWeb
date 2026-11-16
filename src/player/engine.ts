@@ -166,6 +166,36 @@ class AudioEngine {
     if (this.els) effects.attach(this.els)
   }
 
+  /**
+   * Take Web Audio out of the path entirely. Elements routed into an
+   * AudioContext can't be unrouted, so replace them with fresh ones and carry
+   * over the current track, position and play state.
+   */
+  disableEffects() {
+    if (!this.els || !effects.active) return
+    const old = this.els
+    const { src, currentTime, paused } = this.audio
+
+    // Swap first, so the old elements' pause events are ignored as not-current.
+    this.els = [this.createElement(), this.createElement()]
+    this.cur = 0
+    this.preloadedId = null
+    this.currentReady = false
+    this.applyVolume()
+    for (const el of old) {
+      el.pause()
+      el.removeAttribute('src')
+      el.load()
+    }
+    void effects.detach()
+
+    if (src) {
+      this.audio.src = src
+      this.pendingSeek = currentTime || null
+      if (!paused) this.play()
+    }
+  }
+
   play() {
     if (!this.els) return
     // Effects persisted as on: build the graph on the first play, which is a user gesture.
@@ -429,6 +459,8 @@ export const player = {
   toggleShuffle: () => store.getState()._toggleShuffle(),
   /** Call from the click that turns effects on (browsers need a gesture to start audio processing). */
   enableEffects: () => engine.enableEffects(),
+  /** Removes Web Audio from the playback path (brief gap while the stream reconnects). */
+  disableEffects: () => engine.disableEffects(),
   cycleRepeat() {
     const order = ['off', 'all', 'one'] as const
     store.setState({ repeat: order[(order.indexOf(store.getState().repeat) + 1) % order.length] })

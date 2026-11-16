@@ -10,9 +10,10 @@ import { persist } from 'zustand/middleware'
  *     → dry ─┬→ limiter → speakers
  *     → reverb (convolver) → wet ─┘
  *
- * Routing an <audio> element through Web Audio can't be undone, so the
- * graph is only built the first time effects are enabled; "off" afterwards
- * means every stage set to neutral.
+ * Off by default, and off means off: no AudioContext exists and audio plays
+ * straight from the <audio> elements. Routing an element into Web Audio
+ * can't be undone, so turning effects off closes the context and the engine
+ * swaps in fresh elements (see AudioEngine.disableEffects).
  */
 
 /** Same centre frequencies as the Android equalizer. */
@@ -97,6 +98,15 @@ class EffectsGraph {
     }
     this.apply(useEffectsStore.getState())
     void this.resume()
+  }
+
+  /** Tears the graph down. The attached elements must no longer be used (they'd be silent). */
+  async detach() {
+    const ctx = this.ctx
+    this.ctx = null
+    this.attached = new WeakSet()
+    this.currentReverb = null
+    await ctx?.close()
   }
 
   /** Browsers start/suspend audio contexts without a user gesture; resume before playing. */
