@@ -18,6 +18,15 @@ import { Route as AppLibraryRouteImport } from './routes/_app/library'
 import { Route as AppPlaylistsRouteImport } from './routes/_app/playlists'
 import { Route as AppSearchRouteImport } from './routes/_app/search'
 import { Route as AppSettingsRouteImport } from './routes/_app/settings'
+import { Route as AppAlbumIdRouteImport } from './routes/_app/album.$id'
+import { Route as AppArtistIdRouteImport } from './routes/_app/artist.$id'
+import { Route as AppGenreNameRouteImport } from './routes/_app/genre.$name'
+import { Route as AppLibraryIndexRouteImport } from './routes/_app/library/index'
+import { Route as AppLibraryAlbumsRouteImport } from './routes/_app/library/albums'
+import { Route as AppLibraryArtistsRouteImport } from './routes/_app/library/artists'
+import { Route as AppLibraryFoldersRouteImport } from './routes/_app/library/folders'
+import { Route as AppLibraryGenresRouteImport } from './routes/_app/library/genres'
+import { Route as AppLibrarySongsRouteImport } from './routes/_app/library/songs'
 
 const AppRoute = AppRouteImport.update({
   id: '/_app',
@@ -63,26 +72,88 @@ const AppSettingsRoute = AppSettingsRouteImport.update({
   path: '/settings',
   getParentRoute: () => AppRoute,
 } as any)
+const AppAlbumIdRoute = AppAlbumIdRouteImport.update({
+  id: '/album/$id',
+  path: '/album/$id',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppArtistIdRoute = AppArtistIdRouteImport.update({
+  id: '/artist/$id',
+  path: '/artist/$id',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppGenreNameRoute = AppGenreNameRouteImport.update({
+  id: '/genre/$name',
+  path: '/genre/$name',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppLibraryIndexRoute = AppLibraryIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => AppLibraryRoute,
+} as any)
+const AppLibraryAlbumsRoute = AppLibraryAlbumsRouteImport.update({
+  id: '/albums',
+  path: '/albums',
+  getParentRoute: () => AppLibraryRoute,
+} as any)
+const AppLibraryArtistsRoute = AppLibraryArtistsRouteImport.update({
+  id: '/artists',
+  path: '/artists',
+  getParentRoute: () => AppLibraryRoute,
+} as any)
+const AppLibraryFoldersRoute = AppLibraryFoldersRouteImport.update({
+  id: '/folders',
+  path: '/folders',
+  getParentRoute: () => AppLibraryRoute,
+} as any)
+const AppLibraryGenresRoute = AppLibraryGenresRouteImport.update({
+  id: '/genres',
+  path: '/genres',
+  getParentRoute: () => AppLibraryRoute,
+} as any)
+const AppLibrarySongsRoute = AppLibrarySongsRouteImport.update({
+  id: '/songs',
+  path: '/songs',
+  getParentRoute: () => AppLibraryRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof AppIndexRoute
   '/login': typeof LoginRoute
   '/equalizer': typeof AppEqualizerRoute
   '/favorites': typeof AppFavoritesRoute
-  '/library': typeof AppLibraryRoute
+  '/library': typeof AppLibraryRouteWithChildren
   '/playlists': typeof AppPlaylistsRoute
   '/search': typeof AppSearchRoute
   '/settings': typeof AppSettingsRoute
+  '/album/$id': typeof AppAlbumIdRoute
+  '/artist/$id': typeof AppArtistIdRoute
+  '/genre/$name': typeof AppGenreNameRoute
+  '/library/albums': typeof AppLibraryAlbumsRoute
+  '/library/artists': typeof AppLibraryArtistsRoute
+  '/library/folders': typeof AppLibraryFoldersRoute
+  '/library/genres': typeof AppLibraryGenresRoute
+  '/library/songs': typeof AppLibrarySongsRoute
+  '/library/': typeof AppLibraryIndexRoute
 }
 export interface FileRoutesByTo {
   '/login': typeof LoginRoute
   '/equalizer': typeof AppEqualizerRoute
   '/favorites': typeof AppFavoritesRoute
-  '/library': typeof AppLibraryRoute
   '/playlists': typeof AppPlaylistsRoute
   '/search': typeof AppSearchRoute
   '/settings': typeof AppSettingsRoute
   '/': typeof AppIndexRoute
+  '/album/$id': typeof AppAlbumIdRoute
+  '/artist/$id': typeof AppArtistIdRoute
+  '/genre/$name': typeof AppGenreNameRoute
+  '/library/albums': typeof AppLibraryAlbumsRoute
+  '/library/artists': typeof AppLibraryArtistsRoute
+  '/library/folders': typeof AppLibraryFoldersRoute
+  '/library/genres': typeof AppLibraryGenresRoute
+  '/library/songs': typeof AppLibrarySongsRoute
+  '/library': typeof AppLibraryIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -90,11 +161,20 @@ export interface FileRoutesById {
   '/login': typeof LoginRoute
   '/_app/equalizer': typeof AppEqualizerRoute
   '/_app/favorites': typeof AppFavoritesRoute
-  '/_app/library': typeof AppLibraryRoute
+  '/_app/library': typeof AppLibraryRouteWithChildren
   '/_app/playlists': typeof AppPlaylistsRoute
   '/_app/search': typeof AppSearchRoute
   '/_app/settings': typeof AppSettingsRoute
   '/_app/': typeof AppIndexRoute
+  '/_app/album/$id': typeof AppAlbumIdRoute
+  '/_app/artist/$id': typeof AppArtistIdRoute
+  '/_app/genre/$name': typeof AppGenreNameRoute
+  '/_app/library/albums': typeof AppLibraryAlbumsRoute
+  '/_app/library/artists': typeof AppLibraryArtistsRoute
+  '/_app/library/folders': typeof AppLibraryFoldersRoute
+  '/_app/library/genres': typeof AppLibraryGenresRoute
+  '/_app/library/songs': typeof AppLibrarySongsRoute
+  '/_app/library/': typeof AppLibraryIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -107,16 +187,33 @@ export interface FileRouteTypes {
     | '/playlists'
     | '/search'
     | '/settings'
+    | '/album/$id'
+    | '/artist/$id'
+    | '/genre/$name'
+    | '/library/albums'
+    | '/library/artists'
+    | '/library/folders'
+    | '/library/genres'
+    | '/library/songs'
+    | '/library/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/login'
     | '/equalizer'
     | '/favorites'
-    | '/library'
     | '/playlists'
     | '/search'
     | '/settings'
     | '/'
+    | '/album/$id'
+    | '/artist/$id'
+    | '/genre/$name'
+    | '/library/albums'
+    | '/library/artists'
+    | '/library/folders'
+    | '/library/genres'
+    | '/library/songs'
+    | '/library'
   id:
     | '__root__'
     | '/_app'
@@ -128,6 +225,15 @@ export interface FileRouteTypes {
     | '/_app/search'
     | '/_app/settings'
     | '/_app/'
+    | '/_app/album/$id'
+    | '/_app/artist/$id'
+    | '/_app/genre/$name'
+    | '/_app/library/albums'
+    | '/_app/library/artists'
+    | '/_app/library/folders'
+    | '/_app/library/genres'
+    | '/_app/library/songs'
+    | '/_app/library/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -200,27 +306,118 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppSettingsRouteImport
       parentRoute: typeof AppRoute
     }
+    '/_app/album/$id': {
+      id: '/_app/album/$id'
+      path: '/album/$id'
+      fullPath: '/album/$id'
+      preLoaderRoute: typeof AppAlbumIdRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/artist/$id': {
+      id: '/_app/artist/$id'
+      path: '/artist/$id'
+      fullPath: '/artist/$id'
+      preLoaderRoute: typeof AppArtistIdRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/genre/$name': {
+      id: '/_app/genre/$name'
+      path: '/genre/$name'
+      fullPath: '/genre/$name'
+      preLoaderRoute: typeof AppGenreNameRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/library/': {
+      id: '/_app/library/'
+      path: '/'
+      fullPath: '/library/'
+      preLoaderRoute: typeof AppLibraryIndexRouteImport
+      parentRoute: typeof AppLibraryRoute
+    }
+    '/_app/library/albums': {
+      id: '/_app/library/albums'
+      path: '/albums'
+      fullPath: '/library/albums'
+      preLoaderRoute: typeof AppLibraryAlbumsRouteImport
+      parentRoute: typeof AppLibraryRoute
+    }
+    '/_app/library/artists': {
+      id: '/_app/library/artists'
+      path: '/artists'
+      fullPath: '/library/artists'
+      preLoaderRoute: typeof AppLibraryArtistsRouteImport
+      parentRoute: typeof AppLibraryRoute
+    }
+    '/_app/library/folders': {
+      id: '/_app/library/folders'
+      path: '/folders'
+      fullPath: '/library/folders'
+      preLoaderRoute: typeof AppLibraryFoldersRouteImport
+      parentRoute: typeof AppLibraryRoute
+    }
+    '/_app/library/genres': {
+      id: '/_app/library/genres'
+      path: '/genres'
+      fullPath: '/library/genres'
+      preLoaderRoute: typeof AppLibraryGenresRouteImport
+      parentRoute: typeof AppLibraryRoute
+    }
+    '/_app/library/songs': {
+      id: '/_app/library/songs'
+      path: '/songs'
+      fullPath: '/library/songs'
+      preLoaderRoute: typeof AppLibrarySongsRouteImport
+      parentRoute: typeof AppLibraryRoute
+    }
   }
 }
+
+interface AppLibraryRouteChildren {
+  AppLibraryAlbumsRoute: typeof AppLibraryAlbumsRoute
+  AppLibraryArtistsRoute: typeof AppLibraryArtistsRoute
+  AppLibraryFoldersRoute: typeof AppLibraryFoldersRoute
+  AppLibraryGenresRoute: typeof AppLibraryGenresRoute
+  AppLibrarySongsRoute: typeof AppLibrarySongsRoute
+  AppLibraryIndexRoute: typeof AppLibraryIndexRoute
+}
+
+const AppLibraryRouteChildren: AppLibraryRouteChildren = {
+  AppLibraryAlbumsRoute: AppLibraryAlbumsRoute,
+  AppLibraryArtistsRoute: AppLibraryArtistsRoute,
+  AppLibraryFoldersRoute: AppLibraryFoldersRoute,
+  AppLibraryGenresRoute: AppLibraryGenresRoute,
+  AppLibrarySongsRoute: AppLibrarySongsRoute,
+  AppLibraryIndexRoute: AppLibraryIndexRoute,
+}
+
+const AppLibraryRouteWithChildren = AppLibraryRoute._addFileChildren(
+  AppLibraryRouteChildren,
+)
 
 interface AppRouteChildren {
   AppEqualizerRoute: typeof AppEqualizerRoute
   AppFavoritesRoute: typeof AppFavoritesRoute
-  AppLibraryRoute: typeof AppLibraryRoute
+  AppLibraryRoute: typeof AppLibraryRouteWithChildren
   AppPlaylistsRoute: typeof AppPlaylistsRoute
   AppSearchRoute: typeof AppSearchRoute
   AppSettingsRoute: typeof AppSettingsRoute
   AppIndexRoute: typeof AppIndexRoute
+  AppAlbumIdRoute: typeof AppAlbumIdRoute
+  AppArtistIdRoute: typeof AppArtistIdRoute
+  AppGenreNameRoute: typeof AppGenreNameRoute
 }
 
 const AppRouteChildren: AppRouteChildren = {
   AppEqualizerRoute: AppEqualizerRoute,
   AppFavoritesRoute: AppFavoritesRoute,
-  AppLibraryRoute: AppLibraryRoute,
+  AppLibraryRoute: AppLibraryRouteWithChildren,
   AppPlaylistsRoute: AppPlaylistsRoute,
   AppSearchRoute: AppSearchRoute,
   AppSettingsRoute: AppSettingsRoute,
   AppIndexRoute: AppIndexRoute,
+  AppAlbumIdRoute: AppAlbumIdRoute,
+  AppArtistIdRoute: AppArtistIdRoute,
+  AppGenreNameRoute: AppGenreNameRoute,
 }
 
 const AppRouteWithChildren = AppRoute._addFileChildren(AppRouteChildren)

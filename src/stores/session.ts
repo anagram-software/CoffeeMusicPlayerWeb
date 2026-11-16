@@ -48,3 +48,10 @@ export function useSubsonic(): SubsonicClient {
   if (!client) throw new Error('useSubsonic() called without a session')
   return client
 }
+
+/** Non-hook access for route loaders (which only run under the authenticated layout). */
+export function getClient(): SubsonicClient {
+  const client = useSessionStore.getState().client
+  if (!client) throw new Error('getClient() called without a session')
+  return client
+}

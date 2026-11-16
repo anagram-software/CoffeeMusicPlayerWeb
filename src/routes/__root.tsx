@@ -16,8 +16,8 @@ function RootLayout() {
       <Toaster position="bottom-center" />
       {import.meta.env.DEV && (
         <>
-          <ReactQueryDevtools buttonPosition="top-right" />
-          <TanStackRouterDevtools position="top-right" />
+          <ReactQueryDevtools buttonPosition="bottom-left" />
+          <TanStackRouterDevtools position="bottom-left" toggleButtonProps={{ style: { bottom: 64 } }} />
         </>
       )}
     </TooltipProvider>

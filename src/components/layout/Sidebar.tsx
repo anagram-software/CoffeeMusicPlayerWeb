@@ -1,10 +1,13 @@
 import { Link } from '@tanstack/react-router'
+import { useCurrentSection } from '@/hooks/useCurrentSection'
 import { navSections, sections } from '@/lib/sections'
 import { useSessionStore } from '@/stores/session'
 
 /** Navigation list, used by the desktop sidebar and the mobile drawer. */
 export function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
   const session = useSessionStore((s) => s.session)
+  // Highlight by section, so e.g. an album page keeps "Library" highlighted.
+  const current = useCurrentSection()
 
   return (
     <nav className="flex h-full flex-col overflow-y-auto">
@@ -30,10 +33,10 @@ export function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
               <Link
                 to={to}
                 onClick={onNavigate}
-                activeOptions={{ exact: to === '/' }}
-                className="group flex items-center gap-4 rounded-lg px-3 py-2.5 text-sm text-muted-foreground transition-colors hover:bg-sidebar-accent hover:text-foreground data-[status=active]:bg-section/12 data-[status=active]:text-foreground"
+                data-active={current === id || undefined}
+                className="group flex items-center gap-4 rounded-lg px-3 py-2.5 text-sm text-muted-foreground transition-colors hover:bg-sidebar-accent hover:text-foreground data-active:bg-section/12 data-active:text-foreground"
               >
-                <Icon className="size-5 shrink-0 transition-colors group-data-[status=active]:text-section" />
+                <Icon className="size-5 shrink-0 transition-colors group-data-active:text-section" />
                 {label}
               </Link>
             </li>
