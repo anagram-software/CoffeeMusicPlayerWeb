@@ -5,9 +5,7 @@ import type {
   ArtistInfo2,
   ArtistsID3,
   ArtistWithAlbumsID3,
-  Directory,
   Genres,
-  Indexes,
   SearchResult3,
   Songs,
   TopSongs,
@@ -147,28 +145,6 @@ export const topSongsQuery = (c: SubsonicClient, artistId: string, artistName: s
       (await c.get<{ topSongs: TopSongs }>('getTopSongs', { id: artistId, artist: artistName, count: 10 }, { signal }))
         .topSongs.song ?? [],
     staleTime: 60 * 60 * 1000,
-  })
-
-/** Root of the folder browser. On Navidrome these "folders" are artists → albums → songs. */
-export const indexesQuery = (c: SubsonicClient) =>
-  queryOptions({
-    queryKey: ['indexes'],
-    queryFn: async ({ signal }) => {
-      const r = await c.get<{ indexes: Indexes }>('getIndexes', {}, { signal })
-      const dirs = (r.indexes.index ?? []).flatMap((i) => i.artist ?? [])
-      return {
-        // No art at the root: these are folders, shown with a folder icon.
-        dirs: dirs.map((d) => ({ id: d.id, name: d.name })),
-        files: r.indexes.child ?? [],
-      }
-    },
-  })
-
-export const directoryQuery = (c: SubsonicClient, id: string) =>
-  queryOptions({
-    queryKey: ['directory', id],
-    queryFn: async ({ signal }) =>
-      (await c.get<{ directory: Directory }>('getMusicDirectory', { id }, { signal })).directory,
   })
 
 export const searchQuery = (c: SubsonicClient, query: string) =>

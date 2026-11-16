@@ -9,7 +9,6 @@ const tabs = [
   { to: '/library/songs', label: 'Songs' },
   { to: '/library/albums', label: 'Albums' },
   { to: '/library/artists', label: 'Artists' },
-  { to: '/library/folders', label: 'Folders' },
   { to: '/library/genres', label: 'Genres' },
 ] as const
 

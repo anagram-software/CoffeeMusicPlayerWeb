@@ -24,7 +24,6 @@ import { Route as AppGenreNameRouteImport } from './routes/_app/genre.$name'
 import { Route as AppLibraryIndexRouteImport } from './routes/_app/library/index'
 import { Route as AppLibraryAlbumsRouteImport } from './routes/_app/library/albums'
 import { Route as AppLibraryArtistsRouteImport } from './routes/_app/library/artists'
-import { Route as AppLibraryFoldersRouteImport } from './routes/_app/library/folders'
 import { Route as AppLibraryGenresRouteImport } from './routes/_app/library/genres'
 import { Route as AppLibrarySongsRouteImport } from './routes/_app/library/songs'
 
@@ -102,11 +101,6 @@ const AppLibraryArtistsRoute = AppLibraryArtistsRouteImport.update({
   path: '/artists',
   getParentRoute: () => AppLibraryRoute,
 } as any)
-const AppLibraryFoldersRoute = AppLibraryFoldersRouteImport.update({
-  id: '/folders',
-  path: '/folders',
-  getParentRoute: () => AppLibraryRoute,
-} as any)
 const AppLibraryGenresRoute = AppLibraryGenresRouteImport.update({
   id: '/genres',
   path: '/genres',
@@ -132,7 +126,6 @@ export interface FileRoutesByFullPath {
   '/genre/$name': typeof AppGenreNameRoute
   '/library/albums': typeof AppLibraryAlbumsRoute
   '/library/artists': typeof AppLibraryArtistsRoute
-  '/library/folders': typeof AppLibraryFoldersRoute
   '/library/genres': typeof AppLibraryGenresRoute
   '/library/songs': typeof AppLibrarySongsRoute
   '/library/': typeof AppLibraryIndexRoute
@@ -150,7 +143,6 @@ export interface FileRoutesByTo {
   '/genre/$name': typeof AppGenreNameRoute
   '/library/albums': typeof AppLibraryAlbumsRoute
   '/library/artists': typeof AppLibraryArtistsRoute
-  '/library/folders': typeof AppLibraryFoldersRoute
   '/library/genres': typeof AppLibraryGenresRoute
   '/library/songs': typeof AppLibrarySongsRoute
   '/library': typeof AppLibraryIndexRoute
@@ -171,7 +163,6 @@ export interface FileRoutesById {
   '/_app/genre/$name': typeof AppGenreNameRoute
   '/_app/library/albums': typeof AppLibraryAlbumsRoute
   '/_app/library/artists': typeof AppLibraryArtistsRoute
-  '/_app/library/folders': typeof AppLibraryFoldersRoute
   '/_app/library/genres': typeof AppLibraryGenresRoute
   '/_app/library/songs': typeof AppLibrarySongsRoute
   '/_app/library/': typeof AppLibraryIndexRoute
@@ -192,7 +183,6 @@ export interface FileRouteTypes {
     | '/genre/$name'
     | '/library/albums'
     | '/library/artists'
-    | '/library/folders'
     | '/library/genres'
     | '/library/songs'
     | '/library/'
@@ -210,7 +200,6 @@ export interface FileRouteTypes {
     | '/genre/$name'
     | '/library/albums'
     | '/library/artists'
-    | '/library/folders'
     | '/library/genres'
     | '/library/songs'
     | '/library'
@@ -230,7 +219,6 @@ export interface FileRouteTypes {
     | '/_app/genre/$name'
     | '/_app/library/albums'
     | '/_app/library/artists'
-    | '/_app/library/folders'
     | '/_app/library/genres'
     | '/_app/library/songs'
     | '/_app/library/'
@@ -348,13 +336,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppLibraryArtistsRouteImport
       parentRoute: typeof AppLibraryRoute
     }
-    '/_app/library/folders': {
-      id: '/_app/library/folders'
-      path: '/folders'
-      fullPath: '/library/folders'
-      preLoaderRoute: typeof AppLibraryFoldersRouteImport
-      parentRoute: typeof AppLibraryRoute
-    }
     '/_app/library/genres': {
       id: '/_app/library/genres'
       path: '/genres'
@@ -375,7 +356,6 @@ declare module '@tanstack/react-router' {
 interface AppLibraryRouteChildren {
   AppLibraryAlbumsRoute: typeof AppLibraryAlbumsRoute
   AppLibraryArtistsRoute: typeof AppLibraryArtistsRoute
-  AppLibraryFoldersRoute: typeof AppLibraryFoldersRoute
   AppLibraryGenresRoute: typeof AppLibraryGenresRoute
   AppLibrarySongsRoute: typeof AppLibrarySongsRoute
   AppLibraryIndexRoute: typeof AppLibraryIndexRoute
@@ -384,7 +364,6 @@ interface AppLibraryRouteChildren {
 const AppLibraryRouteChildren: AppLibraryRouteChildren = {
   AppLibraryAlbumsRoute: AppLibraryAlbumsRoute,
   AppLibraryArtistsRoute: AppLibraryArtistsRoute,
-  AppLibraryFoldersRoute: AppLibraryFoldersRoute,
   AppLibraryGenresRoute: AppLibraryGenresRoute,
   AppLibrarySongsRoute: AppLibrarySongsRoute,
   AppLibraryIndexRoute: AppLibraryIndexRoute,
