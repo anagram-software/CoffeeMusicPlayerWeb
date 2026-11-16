@@ -12,7 +12,6 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as AppRouteImport } from './routes/_app'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as AppIndexRouteImport } from './routes/_app/index'
-import { Route as AppEqualizerRouteImport } from './routes/_app/equalizer'
 import { Route as AppFavoritesRouteImport } from './routes/_app/favorites'
 import { Route as AppLibraryRouteImport } from './routes/_app/library'
 import { Route as AppPlaylistsRouteImport } from './routes/_app/playlists'
@@ -40,11 +39,6 @@ const LoginRoute = LoginRouteImport.update({
 const AppIndexRoute = AppIndexRouteImport.update({
   id: '/',
   path: '/',
-  getParentRoute: () => AppRoute,
-} as any)
-const AppEqualizerRoute = AppEqualizerRouteImport.update({
-  id: '/equalizer',
-  path: '/equalizer',
   getParentRoute: () => AppRoute,
 } as any)
 const AppFavoritesRoute = AppFavoritesRouteImport.update({
@@ -121,7 +115,6 @@ const AppPlaylistIdRoute = AppPlaylistIdRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof AppIndexRoute
   '/login': typeof LoginRoute
-  '/equalizer': typeof AppEqualizerRoute
   '/favorites': typeof AppFavoritesRoute
   '/library': typeof AppLibraryRouteWithChildren
   '/playlists': typeof AppPlaylistsRoute
@@ -139,7 +132,6 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/login': typeof LoginRoute
-  '/equalizer': typeof AppEqualizerRoute
   '/favorites': typeof AppFavoritesRoute
   '/playlists': typeof AppPlaylistsRoute
   '/search': typeof AppSearchRoute
@@ -159,7 +151,6 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/_app': typeof AppRouteWithChildren
   '/login': typeof LoginRoute
-  '/_app/equalizer': typeof AppEqualizerRoute
   '/_app/favorites': typeof AppFavoritesRoute
   '/_app/library': typeof AppLibraryRouteWithChildren
   '/_app/playlists': typeof AppPlaylistsRoute
@@ -181,7 +172,6 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/login'
-    | '/equalizer'
     | '/favorites'
     | '/library'
     | '/playlists'
@@ -199,7 +189,6 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/login'
-    | '/equalizer'
     | '/favorites'
     | '/playlists'
     | '/search'
@@ -218,7 +207,6 @@ export interface FileRouteTypes {
     | '__root__'
     | '/_app'
     | '/login'
-    | '/_app/equalizer'
     | '/_app/favorites'
     | '/_app/library'
     | '/_app/playlists'
@@ -262,13 +250,6 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof AppIndexRouteImport
-      parentRoute: typeof AppRoute
-    }
-    '/_app/equalizer': {
-      id: '/_app/equalizer'
-      path: '/equalizer'
-      fullPath: '/equalizer'
-      preLoaderRoute: typeof AppEqualizerRouteImport
       parentRoute: typeof AppRoute
     }
     '/_app/favorites': {
@@ -393,7 +374,6 @@ const AppLibraryRouteWithChildren = AppLibraryRoute._addFileChildren(
 )
 
 interface AppRouteChildren {
-  AppEqualizerRoute: typeof AppEqualizerRoute
   AppFavoritesRoute: typeof AppFavoritesRoute
   AppLibraryRoute: typeof AppLibraryRouteWithChildren
   AppPlaylistsRoute: typeof AppPlaylistsRoute
@@ -407,7 +387,6 @@ interface AppRouteChildren {
 }
 
 const AppRouteChildren: AppRouteChildren = {
-  AppEqualizerRoute: AppEqualizerRoute,
   AppFavoritesRoute: AppFavoritesRoute,
   AppLibraryRoute: AppLibraryRouteWithChildren,
   AppPlaylistsRoute: AppPlaylistsRoute,

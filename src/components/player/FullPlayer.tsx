@@ -76,7 +76,7 @@ export function FullPlayer() {
         {/* On narrow screens lyrics and queue share the art's space, so opening one closes the other. */}
         <div className="flex items-center" onPointerDown={(e) => e.stopPropagation()}>
           <Button variant="ghost" size="icon-lg" asChild className="text-white/60 hover:bg-white/10 hover:text-white">
-            <Link to="/equalizer" onClick={close} aria-label="Equalizer">
+            <Link to="/settings" hash="equalizer" onClick={close} aria-label="Equalizer">
               <MdEqualizer className="size-6" />
             </Link>
           </Button>

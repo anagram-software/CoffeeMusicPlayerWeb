@@ -139,7 +139,6 @@
 [data-section="favorites"] { --section-accent: #ff4081; --section-accent-foreground: #ffffff; }
 [data-section="library"] { --section-accent: #448aff; --section-accent-foreground: #ffffff; }
 [data-section="playlists"] { --section-accent: #ffc400; --section-accent-foreground: #1a1a1a; }
-[data-section="equalizer"] { --section-accent: #7c4dff; --section-accent-foreground: #ffffff; }
 [data-section="settings"] { --section-accent: #ff6e40; --section-accent-foreground: #ffffff; }
 [data-section="search"] { --section-accent: #448aff; --section-accent-foreground: #ffffff; }
 [data-section="edit"] { --section-accent: #1de9b6; --section-accent-foreground: #1a1a1a; }

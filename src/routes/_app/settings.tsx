@@ -1,5 +1,7 @@
 import { createFileRoute, useNavigate } from '@tanstack/react-router'
 import { MdLogout } from 'react-icons/md'
+import { EqualizerSettings } from '@/components/settings/EqualizerSettings'
+import { Row, SettingsGroup } from '@/components/settings/SettingsLayout'
 import { Button } from '@/components/ui/button'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Switch } from '@/components/ui/switch'
@@ -32,6 +34,7 @@ function SettingsPage() {
       </SettingsGroup>
 
       <PlaybackSettings />
+      <EqualizerSettings />
       <LyricsSettings />
 
       <SettingsGroup title="Account">
@@ -106,39 +109,5 @@ function LyricsSettings() {
         <Switch checked={lrclib} onCheckedChange={(v) => set({ lrclib: v })} aria-label="Find missing lyrics online" />
       </Row>
     </SettingsGroup>
-  )
-}
-
-/** Uppercase accent-coloured category header, like the Android PreferenceCategory. */
-function SettingsGroup({ title, children }: { title: string; children: React.ReactNode }) {
-  return (
-    <section className="mt-6">
-      <h2 className="mb-1 text-xs font-medium tracking-wider text-section uppercase">{title}</h2>
-      <div className="divide-y divide-border">{children}</div>
-    </section>
-  )
-}
-
-function Row({
-  label,
-  value,
-  title,
-  description,
-  children,
-}: {
-  label: string
-  value?: string
-  title?: string
-  description?: string
-  children?: React.ReactNode
-}) {
-  return (
-    <div className="flex items-center justify-between gap-4 py-3" title={title}>
-      <div className="min-w-0">
-        <div className="text-sm">{label}</div>
-        {description && <div className="mt-0.5 text-xs text-muted-foreground">{description}</div>}
-      </div>
-      {children ?? <span className="truncate text-sm text-muted-foreground">{value}</span>}
-    </div>
   )
 }

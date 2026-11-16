@@ -28,7 +28,7 @@ Zustand · Tailwind CSS v4 · shadcn/ui (Radix) · react-icons (Material Design)
   media keys / lock screen (Media Session), scrobbling, resume after reload
 - Full player tinted from the album art, with synced lyrics (server, or LRCLIB if enabled)
 - Favorites (starring), playlists (create, edit, reorder), Home
-- Equalizer: 5 bands with presets, bass boost, virtualizer, reverb (Web Audio)
+- Equalizer in Settings (off by default): 5 bands with presets, bass boost, virtualizer, reverb (Web Audio)
 
 ## Layout
 
