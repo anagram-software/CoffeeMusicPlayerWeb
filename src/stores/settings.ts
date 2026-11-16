@@ -11,6 +11,8 @@ interface SettingsState {
   maxBitRate: (typeof maxBitRates)[number]
   /** Report plays to the server (play counts, Last.fm/ListenBrainz via Navidrome). */
   scrobble: boolean
+  /** Look up lyrics the server doesn't have on lrclib.net (sends title/artist/album there). */
+  lrclib: boolean
   set: (partial: Partial<Omit<SettingsState, 'set'>>) => void
 }
 
@@ -20,8 +22,9 @@ export const useSettingsStore = create<SettingsState>()(
       streamFormat: 'raw',
       maxBitRate: 0,
       scrobble: true,
+      lrclib: false,
       set: (partial) => set(partial),
     }),
-    { name: 'coffee.settings', partialize: ({ streamFormat, maxBitRate, scrobble }) => ({ streamFormat, maxBitRate, scrobble }) },
+    { name: 'coffee.settings', partialize: ({ streamFormat, maxBitRate, scrobble, lrclib }) => ({ streamFormat, maxBitRate, scrobble, lrclib }) },
   ),
 )

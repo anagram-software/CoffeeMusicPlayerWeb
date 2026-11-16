@@ -32,6 +32,7 @@ function SettingsPage() {
       </SettingsGroup>
 
       <PlaybackSettings />
+      <LyricsSettings />
 
       <SettingsGroup title="Account">
         <Row label="Signed in as" value={user.isAdmin ? `${user.name} (admin)` : user.name} />
@@ -89,6 +90,20 @@ function PlaybackSettings() {
       </Row>
       <Row label="Scrobble plays" description="Updates play counts and forwards to Last.fm / ListenBrainz if set up in Navidrome.">
         <Switch checked={scrobble} onCheckedChange={(v) => set({ scrobble: v })} aria-label="Scrobble plays" />
+      </Row>
+    </SettingsGroup>
+  )
+}
+
+function LyricsSettings() {
+  const { lrclib, set } = useSettingsStore()
+  return (
+    <SettingsGroup title="Lyrics">
+      <Row
+        label="Find missing lyrics online"
+        description="When your server has no lyrics for a song, look them up on lrclib.net. This sends the song's title, artist and album to that service."
+      >
+        <Switch checked={lrclib} onCheckedChange={(v) => set({ lrclib: v })} aria-label="Find missing lyrics online" />
       </Row>
     </SettingsGroup>
   )

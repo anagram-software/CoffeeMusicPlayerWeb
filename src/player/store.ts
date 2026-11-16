@@ -28,6 +28,7 @@ interface PlayerState {
   duration: number
   fullPlayerOpen: boolean
   queueOpen: boolean
+  lyricsOpen: boolean
 }
 
 interface PlayerActions {
@@ -60,6 +61,7 @@ export const usePlayerStore = create<PlayerState & PlayerActions>()(
       duration: 0,
       fullPlayerOpen: false,
       queueOpen: false,
+      lyricsOpen: false,
 
       set: (partial) => set(partial),
 

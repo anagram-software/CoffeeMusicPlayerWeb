@@ -1,7 +1,7 @@
 import { Link } from '@tanstack/react-router'
 import { motion, useDragControls } from 'motion/react'
 import { useEffect } from 'react'
-import { MdKeyboardArrowDown, MdQueueMusic } from 'react-icons/md'
+import { MdEqualizer, MdKeyboardArrowDown, MdLyrics, MdQueueMusic } from 'react-icons/md'
 import { CoverArt } from '@/components/CoverArt'
 import { TrackMenu } from '@/components/library/TrackMenu'
 import { StarButton } from '@/components/StarButton'
@@ -11,6 +11,7 @@ import { useArtColor } from '@/lib/artColor'
 import { cn } from '@/lib/utils'
 import { useCurrentTrack, usePlayerStore } from '@/player/store'
 import { NextButton, PlayPauseButton, PreviousButton, RepeatButton, SeekBar, SeekTimes, ShuffleButton, VolumeControl } from './controls'
+import { LyricsView } from './LyricsView'
 import { QueueList } from './QueueList'
 
 const close = () => usePlayerStore.setState({ fullPlayerOpen: false })
@@ -25,6 +26,7 @@ export function FullPlayer() {
   const track = useCurrentTrack()
   const tint = useArtColor(track?.coverArt) ?? '#2a2a2a'
   const queueOpen = usePlayerStore((s) => s.queueOpen)
+  const lyricsOpen = usePlayerStore((s) => s.lyricsOpen)
   const position = usePlayerStore((s) => `${s.index + 1}/${s.queue.length}`)
   const dragControls = useDragControls()
   // Queue beside the art on wide screens (lg), in place of it on narrow ones.
@@ -71,31 +73,57 @@ export function FullPlayer() {
           <MdKeyboardArrowDown className="size-7" />
         </Button>
         <span className="text-xs font-medium tracking-wider text-white/70 uppercase">Now playing</span>
-        <Button
-          variant="ghost"
-          size="icon-lg"
-          onClick={() => usePlayerStore.setState({ queueOpen: !queueOpen })}
-          aria-label={queueOpen ? 'Hide queue' : 'Show queue'}
-          aria-pressed={queueOpen}
-          className={cn('hover:bg-white/10', queueOpen ? 'text-white' : 'text-white/60')}
-        >
-          <MdQueueMusic className="size-6" />
-        </Button>
+        {/* On narrow screens lyrics and queue share the art's space, so opening one closes the other. */}
+        <div className="flex items-center" onPointerDown={(e) => e.stopPropagation()}>
+          <Button variant="ghost" size="icon-lg" asChild className="text-white/60 hover:bg-white/10 hover:text-white">
+            <Link to="/equalizer" onClick={close} aria-label="Equalizer">
+              <MdEqualizer className="size-6" />
+            </Link>
+          </Button>
+          <Button
+            variant="ghost"
+            size="icon-lg"
+            onClick={() => usePlayerStore.setState({ lyricsOpen: !lyricsOpen, ...(!wide && { queueOpen: false }) })}
+            aria-label={lyricsOpen ? 'Hide lyrics' : 'Show lyrics'}
+            aria-pressed={lyricsOpen}
+            className={cn('hover:bg-white/10', lyricsOpen ? 'text-white' : 'text-white/60')}
+          >
+            <MdLyrics className="size-6" />
+          </Button>
+          <Button
+            variant="ghost"
+            size="icon-lg"
+            onClick={() => usePlayerStore.setState({ queueOpen: !queueOpen, ...(!wide && { lyricsOpen: false }) })}
+            aria-label={queueOpen ? 'Hide queue' : 'Show queue'}
+            aria-pressed={queueOpen}
+            className={cn('hover:bg-white/10', queueOpen ? 'text-white' : 'text-white/60')}
+          >
+            <MdQueueMusic className="size-6" />
+          </Button>
+        </div>
       </header>
 
       <div className={cn('relative grid min-h-0 flex-1 grid-cols-[minmax(0,1fr)]', queueOpen && wide && 'grid-cols-[minmax(0,1fr)_26rem]')}>
         <div className="flex min-h-0 flex-col items-center justify-center gap-6 px-6 pb-8 md:gap-8">
-          {/* Art (hidden on small screens while the queue is shown) */}
+          {/* Art or lyrics (hidden on small screens while the queue is shown). Dragging the art closes the player; lyrics scroll instead. */}
           <div
-            className={cn('flex min-h-0 w-full flex-1 touch-none items-center justify-center [container-type:size]', queueOpen && !wide && 'hidden')}
-            onPointerDown={startDrag}
+            className={cn(
+              'flex min-h-0 w-full flex-1 items-center justify-center [container-type:size]',
+              !lyricsOpen && 'touch-none',
+              queueOpen && !wide && 'hidden',
+            )}
+            onPointerDown={lyricsOpen ? undefined : startDrag}
           >
-            {/* Square, as large as fits both ways (cq units = this container's size) */}
-            <CoverArt
-              id={track.coverArt}
-              size={1000}
-              className="size-[min(100cqw,100cqh,32rem)] rounded-lg shadow-2xl shadow-black/60"
-            />
+            {lyricsOpen ? (
+              <LyricsView track={track} className="h-full max-w-2xl" />
+            ) : (
+              /* Square, as large as fits both ways (cq units = this container's size) */
+              <CoverArt
+                id={track.coverArt}
+                size={1000}
+                className="size-[min(100cqw,100cqh,32rem)] rounded-lg shadow-2xl shadow-black/60"
+              />
+            )}
           </div>
 
           {queueOpen && !wide && <QueueList className="w-full flex-1" />}

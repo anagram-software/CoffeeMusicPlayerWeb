@@ -1,6 +1,7 @@
 import { toast } from 'sonner'
 import { useSessionStore } from '@/stores/session'
 import { useSettingsStore } from '@/stores/settings'
+import { effects, useEffectsStore } from './effects'
 import { nextIndex, previousIndex, type Track } from './queue'
 import { usePlayerStore } from './store'
 
@@ -160,8 +161,16 @@ class AudioEngine {
     this.preloadedId = track.id
   }
 
+  /** Route playback through the effects graph (equalizer etc). Needs a user gesture the first time. */
+  enableEffects() {
+    if (this.els) effects.attach(this.els)
+  }
+
   play() {
     if (!this.els) return
+    // Effects persisted as on: build the graph on the first play, which is a user gesture.
+    if (useEffectsStore.getState().enabled) this.enableEffects()
+    void effects.resume()
     if (!this.audio.src) return this.load(true)
     store.setState({ buffering: true })
     this.audio.play().catch((e: DOMException) => {
@@ -418,6 +427,8 @@ export const player = {
   setVolume: (volume: number) => store.setState({ volume, muted: false }),
   toggleMute: () => store.setState({ muted: !store.getState().muted }),
   toggleShuffle: () => store.getState()._toggleShuffle(),
+  /** Call from the click that turns effects on (browsers need a gesture to start audio processing). */
+  enableEffects: () => engine.enableEffects(),
   cycleRepeat() {
     const order = ['off', 'all', 'one'] as const
     store.setState({ repeat: order[(order.indexOf(store.getState().repeat) + 1) % order.length] })
@@ -425,4 +436,4 @@ export const player = {
 }
 
 // Handy for debugging in the browser console (dev builds only).
-if (import.meta.env.DEV) Object.assign(window, { __coffee: { player, store } })
+if (import.meta.env.DEV) Object.assign(window, { __coffee: { player, store, effects } })
