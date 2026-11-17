@@ -12,6 +12,12 @@ export interface Track {
   duration?: number
   year?: number
   starred?: boolean
+  // File details for the quality label (Navidrome sends samplingRate/bitDepth/channelCount via OpenSubsonic)
+  suffix?: string
+  bitRate?: number
+  samplingRate?: number
+  bitDepth?: number
+  channelCount?: number
 }
 
 /** A queue entry. `qid` is unique even when the same song is queued twice. */
@@ -23,6 +29,8 @@ export interface QueueItem {
 export type RepeatMode = 'off' | 'all' | 'one'
 
 export function toTrack(c: Child): Track {
+  // OpenSubsonic fields not in subsonic-api's types yet.
+  const extra = c as Child & { samplingRate?: number; bitDepth?: number; channelCount?: number }
   return {
     id: c.id,
     title: c.title,
@@ -34,6 +42,11 @@ export function toTrack(c: Child): Track {
     duration: c.duration,
     year: c.year,
     starred: !!c.starred,
+    suffix: c.suffix,
+    bitRate: c.bitRate,
+    samplingRate: extra.samplingRate,
+    bitDepth: extra.bitDepth,
+    channelCount: extra.channelCount,
   }
 }
 

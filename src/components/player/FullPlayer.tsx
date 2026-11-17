@@ -11,7 +11,13 @@ import { Button } from '@/components/ui/button'
 import { useResolvedTheme } from '@/hooks/useTheme'
 import { useArtColor } from '@/lib/artColor'
 import { cn } from '@/lib/utils'
+import { useQuery } from '@tanstack/react-query'
+import { songQuery } from '@/lib/subsonic/queries'
+import { toTrack } from '@/player/queue'
+import { describeQuality } from '@/player/quality'
 import { useCurrentTrack, usePlayerStore } from '@/player/store'
+import { useSubsonic } from '@/stores/session'
+import { useSettingsStore } from '@/stores/settings'
 import { NextButton, PlayPauseButton, PreviousButton, RepeatButton, SeekBar, SeekTimes, ShuffleButton, VolumeControl } from './controls'
 import { LyricsView } from './LyricsView'
 import { QueueList } from './QueueList'
@@ -36,6 +42,15 @@ export function FullPlayer() {
   const tint = useArtColor(track?.coverArt, theme) ?? (theme === 'dark' ? '#2a2a2a' : '#eeeeee')
   const panel = usePlayerStore((s) => s.panel)
   const position = usePlayerStore((s) => `${s.index + 1}/${s.queue.length}`)
+  const streamFormat = useSettingsStore((s) => s.streamFormat)
+  const maxBitRate = useSettingsStore((s) => s.maxBitRate)
+  const showQuality = useSettingsStore((s) => s.showQuality)
+  // Tracks queued before format details were stored (or from sources that omit them): fetch once.
+  const { data: details } = useQuery({
+    ...songQuery(useSubsonic(), track?.id ?? ''),
+    enabled: showQuality && !!track && !track.suffix,
+    select: (song) => toTrack(song),
+  })
   const dragControls = useDragControls()
   // Wide screens dock the side panel; keep it visible beside the player.
   const wide = useMediaQuery('(min-width: 1024px)')
@@ -67,6 +82,7 @@ export function FullPlayer() {
   if (!track) return null
 
   const startDrag = (e: React.PointerEvent) => dragControls.start(e)
+  const quality = describeQuality(track.suffix ? track : (details ?? {}), { streamFormat, maxBitRate })
 
   return (
     <motion.div
@@ -147,6 +163,12 @@ export function FullPlayer() {
               )}
 
               <div className="flex w-full max-w-xl shrink-0 flex-col gap-4">
+                {/* File format and quality, quietly, right under the artwork */}
+                {showQuality && inlinePanel !== 'lyrics' && quality && (
+                  <p className="-mb-2 text-center text-[11px] font-medium tracking-wider text-foreground/30 uppercase tabular-nums" title="Format and quality">
+                    {quality}
+                  </p>
+                )}
                 {/* Heart · title · menu, as in the Android player */}
                 <div className="flex items-center gap-2">
                   <StarButton kind="song" id={track.id} starred={track.starred} />

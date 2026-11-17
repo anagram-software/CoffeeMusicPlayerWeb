@@ -86,7 +86,7 @@ function SettingsContent() {
 }
 
 function AppearanceSettings() {
-  const { theme, set } = useSettingsStore()
+  const { theme, showQuality, set } = useSettingsStore()
   return (
     <SettingsGroup title="Appearance" id="appearance">
       <Row label="Theme" description="System follows your device's light or dark mode.">
@@ -102,6 +102,9 @@ function AppearanceSettings() {
             ))}
           </SelectContent>
         </Select>
+      </Row>
+      <Row label="Show audio quality" description="Format and quality under the artwork in the full player, e.g. FLAC · 24-bit · 96 kHz.">
+        <Switch checked={showQuality} onCheckedChange={(v) => set({ showQuality: v })} aria-label="Show audio quality" />
       </Row>
     </SettingsGroup>
   )

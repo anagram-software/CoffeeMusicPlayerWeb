@@ -5,6 +5,7 @@ import type {
   ArtistInfo2,
   ArtistsID3,
   ArtistWithAlbumsID3,
+  Child,
   Genres,
   Playlist,
   Playlists,
@@ -118,6 +119,14 @@ export const genreSongsQuery = (c: SubsonicClient, genre: string) =>
     initialPageParam: 0,
     getNextPageParam: (last, all) => (last.length < PAGE_SIZE ? undefined : all.length * PAGE_SIZE),
     select: (data) => data.pages.flat(),
+  })
+
+/** A single song's full details (e.g. file format/quality for tracks queued without them). */
+export const songQuery = (c: SubsonicClient, id: string) =>
+  queryOptions({
+    queryKey: ['song', id],
+    queryFn: async ({ signal }) => (await c.get<{ song: Child }>('getSong', { id }, { signal })).song,
+    staleTime: Infinity,
   })
 
 export const albumQuery = (c: SubsonicClient, id: string) =>

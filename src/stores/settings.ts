@@ -12,6 +12,8 @@ export const maxBitRates = [0, 320, 256, 192, 128, 96] as const
 
 interface SettingsState {
   theme: Theme
+  /** Show the file format/quality line under the artwork in the full player. */
+  showQuality: boolean
   streamFormat: StreamFormat
   maxBitRate: (typeof maxBitRates)[number]
   /** Report plays to the server (play counts, Last.fm/ListenBrainz via Navidrome). */
@@ -25,12 +27,13 @@ export const useSettingsStore = create<SettingsState>()(
   persist(
     (set) => ({
       theme: 'system',
+      showQuality: true,
       streamFormat: 'raw',
       maxBitRate: 0,
       scrobble: true,
       lrclib: false,
       set: (partial) => set(partial),
     }),
-    { name: 'coffee.settings', partialize: ({ theme, streamFormat, maxBitRate, scrobble, lrclib }) => ({ theme, streamFormat, maxBitRate, scrobble, lrclib }) },
+    { name: 'coffee.settings', partialize: ({ theme, showQuality, streamFormat, maxBitRate, scrobble, lrclib }) => ({ theme, showQuality, streamFormat, maxBitRate, scrobble, lrclib }) },
   ),
 )
