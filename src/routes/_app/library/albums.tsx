@@ -17,17 +17,19 @@ import { type AlbumSort, albumListQuery, albumSorts } from '@/lib/subsonic/queri
 import { getClient, useSubsonic } from '@/stores/session'
 
 const sortKeys = Object.keys(albumSorts) as [AlbumSort, ...AlbumSort[]]
+/** Used when the URL has no ?sort= (kept out of the URL so the plain /library/albums link shows it). */
+const DEFAULT_SORT: AlbumSort = 'newest'
 
 export const Route = createFileRoute('/_app/library/albums')({
   validateSearch: z.object({ sort: z.enum(sortKeys).optional() }),
-  loaderDeps: ({ search }) => ({ sort: search.sort ?? 'alphabeticalByName' }),
+  loaderDeps: ({ search }) => ({ sort: search.sort ?? DEFAULT_SORT }),
   // Start fetching during navigation (and on link hover) rather than after render.
   loader: ({ context, deps }) => context.queryClient.prefetchInfiniteQuery(albumListQuery(getClient(), deps.sort)),
   component: AlbumsTab,
 })
 
 function AlbumsTab() {
-  const sort = Route.useSearch({ select: (s) => s.sort ?? 'alphabeticalByName' })
+  const sort = Route.useSearch({ select: (s) => s.sort ?? DEFAULT_SORT })
   const navigate = useNavigate({ from: Route.fullPath })
   const query = useInfiniteQuery(albumListQuery(useSubsonic(), sort))
 
@@ -44,7 +46,7 @@ function AlbumsTab() {
           <DropdownMenuContent align="end">
             <DropdownMenuRadioGroup
               value={sort}
-              onValueChange={(v) => navigate({ search: { sort: v === 'alphabeticalByName' ? undefined : (v as AlbumSort) } })}
+              onValueChange={(v) => navigate({ search: { sort: v === DEFAULT_SORT ? undefined : (v as AlbumSort) } })}
             >
               {sortKeys.map((key) => (
                 <DropdownMenuRadioItem key={key} value={key}>
