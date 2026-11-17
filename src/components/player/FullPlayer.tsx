@@ -143,7 +143,8 @@ export function FullPlayer() {
           <QueueList className="min-h-0 flex-1" />
         ) : (
           <div className={cn('flex min-h-0 flex-1', splitLyrics && 'grid grid-cols-[minmax(0,1fr)_minmax(0,1.15fr)] gap-6')}>
-            <div className="flex min-h-0 flex-1 flex-col items-center justify-center gap-6 px-6 pb-8 md:gap-8">
+            {/* min-w-0: as an item of the row above, it would otherwise grow to fit a long title. */}
+            <div className="flex min-h-0 min-w-0 flex-1 flex-col items-center justify-center gap-6 px-6 pb-8 md:gap-8">
               {inlinePanel === 'lyrics' ? (
                 // Mobile: lyrics in place of the artwork (scrollable, so no drag-to-close here).
                 <LyricsView track={track} className="min-h-0 w-full flex-1" />
