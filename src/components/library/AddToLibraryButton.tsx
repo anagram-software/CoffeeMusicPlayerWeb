@@ -36,17 +36,19 @@ export function AddToLibraryButton({ album }: { album: AlbumWithSongsID3 }) {
     }
   }
 
+  const label = requested ? 'Added to library' : busy ? 'Adding to library…' : 'Add to library'
+
   return (
     <Button
-      size="lg"
-      variant="outline"
+      variant="ghost"
+      size="icon-lg"
       onClick={add}
       disabled={busy || requested}
-      title={`Download the ${plural(missing.length, 'song')} not in your library yet from ${provider}`}
-      className="h-10 rounded-full border-foreground/30 bg-transparent px-5 tracking-wider text-foreground uppercase hover:bg-foreground/10"
+      aria-label={label}
+      title={requested ? `${label}: downloading from ${provider}` : `Add to library: download the ${plural(missing.length, 'song')} not in your library yet from ${provider}`}
+      className="text-foreground/70 hover:text-foreground"
     >
       {requested ? <MdLibraryAddCheck className="size-5" /> : <MdLibraryAdd className="size-5" />}
-      {busy ? 'Adding…' : requested ? 'Added' : 'Add to library'}
     </Button>
   )
 }

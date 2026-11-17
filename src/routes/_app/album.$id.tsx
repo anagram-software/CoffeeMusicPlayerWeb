@@ -50,9 +50,11 @@ function AlbumPage() {
         }
         tags={[album.year ? String(album.year) : undefined, album.genre, plural(album.songCount, 'song'), formatTotalDuration(album.duration)]}
       >
-        <PlayActions tracks={tracks} star={{ kind: 'album', id: album.id, starred: album.starred }}>
-          <AddToLibraryButton album={album} />
-        </PlayActions>
+        <PlayActions
+          tracks={tracks}
+          star={{ kind: 'album', id: album.id, starred: album.starred }}
+          afterShuffle={<AddToLibraryButton album={album} />}
+        />
       </DetailHeader>
 
       <div className="px-2 md:px-4">

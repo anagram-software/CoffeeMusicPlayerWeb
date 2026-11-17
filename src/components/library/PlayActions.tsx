@@ -11,13 +11,16 @@ export function PlayActions({
   tracks,
   disabled,
   star,
+  afterShuffle,
   children,
 }: {
   tracks: Track[]
   disabled?: boolean
   /** Shows a heart for the album/artist itself. */
   star?: { kind: StarKind; id: string; starred: unknown }
-  /** Extra buttons (e.g. a playlist's edit menu). */
+  /** Buttons placed right after Shuffle (e.g. "Add to library"). */
+  afterShuffle?: React.ReactNode
+  /** Extra buttons at the end (e.g. a playlist's edit menu). */
   children?: React.ReactNode
 }) {
   const empty = disabled || tracks.length === 0
@@ -35,6 +38,7 @@ export function PlayActions({
       >
         <MdShuffle className="size-5" /> Shuffle
       </Button>
+      {afterShuffle}
       {star && <StarButton {...star} />}
       {!empty && <TrackMenu getTracks={() => tracks} className="text-foreground" />}
       {children}
