@@ -1,14 +1,10 @@
-import { useQuery, useQueryClient } from '@tanstack/react-query'
+import { useQuery } from '@tanstack/react-query'
 import { Link } from '@tanstack/react-router'
-import { MdMoreHoriz, MdPlayArrow, MdShuffle } from 'react-icons/md'
 import { CoverArt } from '@/components/CoverArt'
-import { Button } from '@/components/ui/button'
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
+import { PlaylistPlayMenu } from '@/components/library/PlaylistPlayMenu'
 import { useCurrentSection } from '@/hooks/useCurrentSection'
 import { navSections, sections } from '@/lib/sections'
-import { type PlaylistInfo, playlistQuery, playlistsQuery } from '@/lib/subsonic/queries'
-import { player } from '@/player/engine'
-import { toTrack } from '@/player/queue'
+import { type PlaylistInfo, playlistsQuery } from '@/lib/subsonic/queries'
 import { useSubsonic } from '@/stores/session'
 
 /** Navigation list, used by the desktop sidebar and the mobile drawer. */
@@ -69,15 +65,6 @@ function SidebarPlaylists({ onNavigate }: { onNavigate?: () => void }) {
 }
 
 function SidebarPlaylist({ playlist, onNavigate }: { playlist: PlaylistInfo; onNavigate?: () => void }) {
-  const client = useSubsonic()
-  const queryClient = useQueryClient()
-
-  const play = async (shuffle: boolean) => {
-    const full = await queryClient.fetchQuery(playlistQuery(client, playlist.id))
-    const tracks = (full.entry ?? []).map(toTrack)
-    if (tracks.length) player.playQueue(tracks, shuffle ? Math.floor(Math.random() * tracks.length) : 0, { shuffle })
-  }
-
   return (
     <li className="group/item relative">
       {/* The "Playlists" link above stays highlighted for the section; this marks which playlist. */}
@@ -91,26 +78,12 @@ function SidebarPlaylist({ playlist, onNavigate }: { playlist: PlaylistInfo; onN
         <CoverArt id={playlist.coverArt} size={64} className="size-8 shrink-0 rounded" />
         <span className="truncate">{playlist.name}</span>
       </Link>
-      <DropdownMenu>
-        <DropdownMenuTrigger asChild>
-          <Button
-            variant="ghost"
-            size="icon-sm"
-            aria-label={`${playlist.name} options`}
-            className="absolute top-1/2 right-1.5 -translate-y-1/2 text-muted-foreground opacity-0 group-hover/item:opacity-100 focus-visible:opacity-100 data-[state=open]:opacity-100 max-md:opacity-100"
-          >
-            <MdMoreHoriz className="size-5" />
-          </Button>
-        </DropdownMenuTrigger>
-        <DropdownMenuContent align="start" side="right">
-          <DropdownMenuItem onSelect={() => play(false)} disabled={playlist.songCount === 0}>
-            <MdPlayArrow /> Play
-          </DropdownMenuItem>
-          <DropdownMenuItem onSelect={() => play(true)} disabled={playlist.songCount === 0}>
-            <MdShuffle /> Shuffle
-          </DropdownMenuItem>
-        </DropdownMenuContent>
-      </DropdownMenu>
+      <PlaylistPlayMenu
+        playlist={playlist}
+        side="right"
+        align="start"
+        className="absolute top-1/2 right-1.5 size-7 -translate-y-1/2 text-muted-foreground opacity-0 group-hover/item:opacity-100 hover:bg-white/10 hover:text-foreground focus-visible:opacity-100 data-[state=open]:opacity-100 max-md:opacity-100"
+      />
     </li>
   )
 }

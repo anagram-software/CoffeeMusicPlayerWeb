@@ -4,6 +4,7 @@ import type { ReactNode } from 'react'
 import { MdPlayArrow } from 'react-icons/md'
 import type { AlbumID3, ArtistID3 } from 'subsonic-api'
 import { CoverArt } from '@/components/CoverArt'
+import { PlaylistPlayMenu } from './PlaylistPlayMenu'
 import { plural } from '@/lib/format'
 import { albumQuery, type PlaylistInfo } from '@/lib/subsonic/queries'
 import { player } from '@/player/engine'
@@ -60,7 +61,7 @@ export function AlbumCard({ album }: { album: AlbumID3 }) {
             tabIndex={-1}
             onClick={play}
             aria-label={`Play ${album.name}`}
-            className="flex size-9 shrink-0 translate-y-1 items-center justify-center rounded-full bg-white text-black opacity-0 shadow-lg transition-all group-hover:translate-y-0 group-hover:opacity-100 hover:scale-105 max-md:hidden"
+            className="flex size-9 shrink-0 items-center justify-center rounded-full bg-white text-black opacity-0 shadow-lg transition-all group-hover:opacity-100 hover:scale-105 max-md:hidden"
           >
             <MdPlayArrow className="size-6" />
           </span>
@@ -90,6 +91,12 @@ export function PlaylistCard({ playlist, showOwner }: { playlist: PlaylistInfo; 
         coverArt={playlist.coverArt}
         title={playlist.name}
         subtitle={[plural(playlist.songCount, 'song'), showOwner && playlist.owner ? `by ${playlist.owner}` : null].filter(Boolean).join(' · ')}
+        action={
+          <PlaylistPlayMenu
+            playlist={playlist}
+            className="size-9 bg-white text-black opacity-0 shadow-lg transition-all group-hover:opacity-100 hover:scale-105 data-[state=open]:opacity-100 max-md:opacity-100"
+          />
+        }
       />
     </Link>
   )
