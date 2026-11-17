@@ -1,8 +1,9 @@
 import { useQuery } from '@tanstack/react-query'
 import { createFileRoute, useNavigate } from '@tanstack/react-router'
 import { useState } from 'react'
-import { MdAdd, MdQueueMusic } from 'react-icons/md'
+import { MdAdd, MdDownload, MdQueueMusic } from 'react-icons/md'
 import { PlaylistCard } from '@/components/library/AlbumCard'
+import { LastfmImportDialog } from '@/components/library/LastfmImportDialog'
 import { PlaylistNameDialog } from '@/components/library/PlaylistNameDialog'
 import { EmptyState, ErrorState, GridSkeleton } from '@/components/library/states'
 import { VirtualGrid } from '@/components/library/VirtualGrid'
@@ -21,6 +22,7 @@ function PlaylistsPage() {
   const query = useQuery(playlistsQuery(useSubsonic()))
   const username = useSessionStore((s) => s.session?.user.name)
   const [createOpen, setCreateOpen] = useState(false)
+  const [importOpen, setImportOpen] = useState(false)
   const { create } = usePlaylistMutations()
   const navigate = useNavigate()
 
@@ -28,9 +30,14 @@ function PlaylistsPage() {
     <div className="px-4 py-4 md:px-6">
       <div className="mb-4 flex items-center justify-between">
         <span className="text-sm text-muted-foreground">{query.data ? `${query.data.length} playlists` : ' '}</span>
-        <Button size="sm" onClick={() => setCreateOpen(true)}>
-          <MdAdd className="size-4" /> New playlist
-        </Button>
+        <div className="flex gap-2">
+          <Button size="sm" variant="outline" onClick={() => setImportOpen(true)}>
+            <MdDownload className="size-4" /> Import from Last.fm
+          </Button>
+          <Button size="sm" onClick={() => setCreateOpen(true)}>
+            <MdAdd className="size-4" /> New playlist
+          </Button>
+        </div>
       </div>
 
       {query.isPending ? (
@@ -47,13 +54,15 @@ function PlaylistsPage() {
         />
       )}
 
+      <LastfmImportDialog open={importOpen} onOpenChange={setImportOpen} />
+
       <PlaylistNameDialog
         open={createOpen}
         onOpenChange={setCreateOpen}
         title="New playlist"
         submitLabel="Create"
         onSubmit={async (name) => {
-          const p = await create.mutateAsync({ name }).catch(() => null) // failure toast comes from the mutation
+          const p = (await create.mutateAsync({ name }).catch(() => null))?.playlist // failure toast comes from the mutation
           if (p) navigate({ to: '/playlist/$id', params: { id: p.id } })
         }}
       />

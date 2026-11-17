@@ -26,3 +26,6 @@ export function externalProvider(id: string | undefined): string | undefined {
   const key = m[1].toLowerCase()
   return providerNames[key] ?? key.charAt(0).toUpperCase() + key.slice(1)
 }
+
+/** OpenSubsonic extension Octo-Fiesta adds to getOpenSubsonicExtensions, so clients can tell it's there. */
+export const OCTO_FIESTA_EXTENSION = 'octoFiesta'

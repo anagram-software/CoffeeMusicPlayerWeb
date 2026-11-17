@@ -24,6 +24,8 @@ interface SettingsState {
   scrobble: boolean
   /** Look up lyrics the server doesn't have on lrclib.net (sends title/artist/album there). */
   lrclib: boolean
+  /** Last.fm API key, for importing track lists as playlists. Empty = not set up. */
+  lastfmApiKey: string
   set: (partial: Partial<Omit<SettingsState, 'set'>>) => void
 }
 
@@ -38,9 +40,10 @@ export const useSettingsStore = create<SettingsState>()(
       maxBitRate: 0,
       scrobble: true,
       lrclib: false,
+      lastfmApiKey: '',
       set: (partial) => set(partial),
     }),
-    { name: 'coffee.settings', partialize: ({ theme, showQuality, searchSource, hideCovers, streamFormat, maxBitRate, scrobble, lrclib }) => ({
+    { name: 'coffee.settings', partialize: ({ theme, showQuality, searchSource, hideCovers, streamFormat, maxBitRate, scrobble, lrclib, lastfmApiKey }) => ({
         theme,
         showQuality,
         searchSource,
@@ -49,6 +52,7 @@ export const useSettingsStore = create<SettingsState>()(
         maxBitRate,
         scrobble,
         lrclib,
+        lastfmApiKey,
       }) },
   ),
 )
