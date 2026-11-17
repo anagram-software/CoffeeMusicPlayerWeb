@@ -40,7 +40,9 @@ export function AppShell() {
   if (!hasSession) return <Navigate to="/login" />
 
   return (
-    <div className="grid h-dvh grid-rows-[1fr_auto] md:grid-cols-[15rem_1fr]">
+    <div className="grid h-dvh grid-cols-[minmax(0,1fr)] grid-rows-[1fr_auto] md:grid-cols-[15rem_minmax(0,1fr)]">
+      {/* Columns are minmax(0, …): an "auto"/"1fr" track grows to fit its widest
+          unbreakable content (a long title), stretching the whole app past the screen. */}
       <aside className="hidden min-h-0 border-r border-sidebar-border bg-sidebar md:block">
         <Sidebar />
       </aside>
