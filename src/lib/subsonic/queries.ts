@@ -151,21 +151,34 @@ export const topSongsQuery = (c: SubsonicClient, artistId: string, artistName: s
     staleTime: 60 * 60 * 1000,
   })
 
-export const searchQuery = (c: SubsonicClient, query: string) =>
+/*
+ * Search, one result kind per query, so each search tab asks only for what
+ * it shows (with Octo-Fiesta, every search also hits the streaming provider).
+ */
+function search3(c: SubsonicClient, query: string, counts: { songCount?: number; albumCount?: number; artistCount?: number }, signal: AbortSignal) {
+  return c
+    .get<{ searchResult3: SearchResult3 }>('search3', { query, songCount: 0, albumCount: 0, artistCount: 0, ...counts }, { signal })
+    .then((r) => r.searchResult3)
+}
+
+export const searchSongsQuery = (c: SubsonicClient, query: string) =>
   queryOptions({
-    queryKey: ['search', query],
-    queryFn: async ({ signal }) => {
-      const r = await c.get<{ searchResult3: SearchResult3 }>(
-        'search3',
-        { query, artistCount: 12, albumCount: 18, songCount: 50 },
-        { signal },
-      )
-      return {
-        artists: r.searchResult3.artist ?? [],
-        albums: r.searchResult3.album ?? [],
-        songs: r.searchResult3.song ?? [],
-      }
-    },
+    queryKey: ['search', 'songs', query],
+    queryFn: async ({ signal }) => (await search3(c, query, { songCount: 100 }, signal)).song ?? [],
+    enabled: query.trim().length > 0,
+  })
+
+export const searchAlbumsQuery = (c: SubsonicClient, query: string) =>
+  queryOptions({
+    queryKey: ['search', 'albums', query],
+    queryFn: async ({ signal }) => (await search3(c, query, { albumCount: 60 }, signal)).album ?? [],
+    enabled: query.trim().length > 0,
+  })
+
+export const searchArtistsQuery = (c: SubsonicClient, query: string) =>
+  queryOptions({
+    queryKey: ['search', 'artists', query],
+    queryFn: async ({ signal }) => (await search3(c, query, { artistCount: 60 }, signal)).artist ?? [],
     enabled: query.trim().length > 0,
   })
 

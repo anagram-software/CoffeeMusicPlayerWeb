@@ -1,4 +1,5 @@
 import { toast } from 'sonner'
+import { isExternalId } from '@/lib/subsonic/external'
 import { useSessionStore } from '@/stores/session'
 import { useSettingsStore } from '@/stores/settings'
 import { effects, useEffectsStore } from './effects'
@@ -155,6 +156,9 @@ class AudioEngine {
     const ni = nextIndex(s.index, s.queue.length, s.repeat, true)
     if (ni === null || ni === s.index) return
     const track = s.queue[ni].track
+    // Streaming an Octo-Fiesta (Qobuz etc.) track makes the proxy download it,
+    // so only fetch those when they actually play, never ahead of time.
+    if (isExternalId(track.id)) return
     if (this.preloadedId === track.id) return
     this.spare.src = this.streamUrl(track)
     this.spare.load()

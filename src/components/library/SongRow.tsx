@@ -7,6 +7,7 @@ import { formatDuration } from '@/lib/format'
 import { cn } from '@/lib/utils'
 import { toTrack } from '@/player/queue'
 import { usePlayerStore } from '@/player/store'
+import { ProviderBadge } from './ProviderBadge'
 import { TrackMenu } from './TrackMenu'
 
 export const SONG_ROW_HEIGHT = 64
@@ -58,7 +59,10 @@ export function SongRow({ song, lead = 'art', index, hideAlbum, onPlay, menuExtr
       )}
 
       <div className="min-w-0 flex-1">
-        <div className={cn('truncate text-sm', isCurrent && 'text-section')}>{song.title}</div>
+        <div className="flex items-center gap-2">
+          <span className={cn('truncate text-sm', isCurrent && 'text-section')}>{song.title}</span>
+          <ProviderBadge id={song.id} />
+        </div>
         <div className="truncate text-xs text-muted-foreground">
           {song.artistId ? (
             <Link

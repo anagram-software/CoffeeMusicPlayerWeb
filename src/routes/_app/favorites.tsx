@@ -29,9 +29,9 @@ function FavoritesPage() {
     <div className="flex flex-col">
       <TabStrip
         tabs={[
-          { label: 'Songs', link: { to: '/favorites', search: {}, activeOptions: { includeSearch: true } } },
-          { label: 'Albums', link: { to: '/favorites', search: { tab: 'albums' }, activeOptions: { includeSearch: true } } },
-          { label: 'Artists', link: { to: '/favorites', search: { tab: 'artists' }, activeOptions: { includeSearch: true } } },
+          { label: 'Songs', link: { to: '/favorites', search: { tab: undefined }, activeOptions: { includeSearch: true, explicitUndefined: true } } },
+          { label: 'Albums', link: { to: '/favorites', search: { tab: 'albums' }, activeOptions: { includeSearch: true, explicitUndefined: true } } },
+          { label: 'Artists', link: { to: '/favorites', search: { tab: 'artists' }, activeOptions: { includeSearch: true, explicitUndefined: true } } },
         ]}
       />
       <div className="px-2 py-4 md:px-4">

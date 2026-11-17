@@ -5,6 +5,7 @@ import { MdPlayArrow } from 'react-icons/md'
 import type { AlbumID3, ArtistID3 } from 'subsonic-api'
 import { CoverArt } from '@/components/CoverArt'
 import { PlaylistPlayMenu } from './PlaylistPlayMenu'
+import { ProviderBadge } from './ProviderBadge'
 import { plural } from '@/lib/format'
 import { albumQuery, type PlaylistInfo } from '@/lib/subsonic/queries'
 import { player } from '@/player/engine'
@@ -15,7 +16,22 @@ import { useSubsonic } from '@/stores/session'
  * Square art card with the title on a gradient overlay, like the Android
  * griditem.xml. Used for both albums and artists.
  */
-export function GridCard({ coverArt, title, subtitle, fallback, action }: { coverArt?: string; title: string; subtitle?: string; fallback?: 'music' | 'person'; action?: ReactNode }) {
+export function GridCard({
+  coverArt,
+  title,
+  subtitle,
+  fallback,
+  action,
+  badgeId,
+}: {
+  coverArt?: string
+  title: string
+  subtitle?: string
+  fallback?: 'music' | 'person'
+  action?: ReactNode
+  /** Item id: Octo-Fiesta items get a provider badge. */
+  badgeId?: string
+}) {
   return (
     <div className="group relative aspect-square overflow-hidden rounded-md shadow-md shadow-black/30">
       <CoverArt
@@ -32,6 +48,7 @@ export function GridCard({ coverArt, title, subtitle, fallback, action }: { cove
         </div>
         {action}
       </div>
+      <ProviderBadge id={badgeId} className="absolute top-2 left-2 bg-black/60 backdrop-blur-sm" />
       <div className="pointer-events-none absolute inset-0 rounded-md ring-1 ring-white/5 ring-inset" />
     </div>
   )
@@ -55,6 +72,7 @@ export function AlbumCard({ album }: { album: AlbumID3 }) {
         coverArt={album.coverArt}
         title={album.name}
         subtitle={album.displayArtist ?? album.artist}
+        badgeId={album.id}
         action={
           <span
             role="button"
@@ -77,6 +95,7 @@ export function ArtistCard({ artist }: { artist: ArtistID3 }) {
       <GridCard
         coverArt={artist.coverArt}
         title={artist.name}
+        badgeId={artist.id}
         subtitle={artist.albumCount ? `${artist.albumCount} album${artist.albumCount === 1 ? '' : 's'}` : undefined}
         fallback="person"
       />
