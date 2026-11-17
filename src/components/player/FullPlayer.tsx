@@ -38,9 +38,12 @@ export function FullPlayer() {
   const position = usePlayerStore((s) => `${s.index + 1}/${s.queue.length}`)
   const dragControls = useDragControls()
   // Wide screens dock the side panel; keep it visible beside the player.
-  const docked = useMediaQuery('(min-width: 1024px)') && !!panel
+  const wide = useMediaQuery('(min-width: 1024px)')
+  const docked = wide && !!panel
   const mobile = !useMediaQuery('(min-width: 768px)')
   const inlinePanel = mobile ? panel : null
+  // Wide screens: optional big lyrics column beside the artwork + controls.
+  const splitLyrics = usePlayerStore((s) => s.fullPlayerLyrics) && wide
 
   useEffect(() => {
     // Esc closes the player, unless a dialog or menu is open on top of it (that one closes instead).
@@ -100,6 +103,16 @@ export function FullPlayer() {
         <span className="pointer-events-none absolute left-1/2 -translate-x-1/2 text-xs font-medium tracking-wider text-foreground/70 uppercase">
           {inlinePanel === 'queue' ? 'Queue' : inlinePanel === 'lyrics' ? 'Lyrics' : 'Now playing'}
         </span>
+        {wide && (
+          <div className="flex items-center" onPointerDown={(e) => e.stopPropagation()}>
+            <HeaderToggle
+              label="lyrics"
+              icon={MdLyrics}
+              active={splitLyrics}
+              onClick={() => usePlayerStore.setState((s) => ({ fullPlayerLyrics: !s.fullPlayerLyrics }))}
+            />
+          </div>
+        )}
         {mobile && (
           <div className="flex items-center" onPointerDown={(e) => e.stopPropagation()}>
             <HeaderToggle label="lyrics" icon={MdLyrics} active={panel === 'lyrics'} onClick={() => togglePanel('lyrics')} />
@@ -113,60 +126,63 @@ export function FullPlayer() {
           // Mobile: the queue takes over the whole body.
           <QueueList className="min-h-0 flex-1" />
         ) : (
-          <div className="flex min-h-0 flex-1 flex-col items-center justify-center gap-6 px-6 pb-8 md:gap-8">
-            {inlinePanel === 'lyrics' ? (
-              // Mobile: lyrics in place of the artwork (scrollable, so no drag-to-close here).
-              <LyricsView track={track} className="min-h-0 w-full flex-1" />
-            ) : (
-              /* Art. Dragging it down closes the player. */
-              <div
-                className="flex min-h-0 w-full flex-1 touch-none items-center justify-center [container-type:size]"
-                onPointerDown={startDrag}
-              >
-                {/* Square, as large as fits both ways (cq units = this container's size) */}
-                <CoverArt
-                  id={track.coverArt}
-                  size={1000}
-                  className="size-[min(100cqw,100cqh,32rem)] rounded-lg shadow-2xl shadow-black/25 dark:shadow-black/60"
-                />
-              </div>
-            )}
-
-            <div className="flex w-full max-w-xl shrink-0 flex-col gap-4">
-              {/* Heart · title · menu, as in the Android player */}
-              <div className="flex items-center gap-2">
-                <StarButton kind="song" id={track.id} starred={track.starred} />
-                <div className="min-w-0 flex-1 text-center">
-                  <Marquee as="h2" title={track.title} className="text-2xl font-light md:text-3xl">
-                    {track.title}
-                  </Marquee>
-                  <p className="mt-1 truncate text-sm text-foreground/70">
-                    <TrackLink to="artist" id={track.artistId} label={track.artist} />
-                    {track.album && ' • '}
-                    <TrackLink to="album" id={track.albumId} label={track.album} />
-                  </p>
+          <div className={cn('flex min-h-0 flex-1', splitLyrics && 'grid grid-cols-[minmax(0,1fr)_minmax(0,1.15fr)] gap-6')}>
+            <div className="flex min-h-0 flex-1 flex-col items-center justify-center gap-6 px-6 pb-8 md:gap-8">
+              {inlinePanel === 'lyrics' ? (
+                // Mobile: lyrics in place of the artwork (scrollable, so no drag-to-close here).
+                <LyricsView track={track} className="min-h-0 w-full flex-1" />
+              ) : (
+                /* Art. Dragging it down closes the player. */
+                <div
+                  className="flex min-h-0 w-full flex-1 touch-none items-center justify-center [container-type:size]"
+                  onPointerDown={startDrag}
+                >
+                  {/* Square, as large as fits both ways (cq units = this container's size) */}
+                  <CoverArt
+                    id={track.coverArt}
+                    size={1000}
+                    className="size-[min(100cqw,100cqh,32rem)] rounded-lg shadow-2xl shadow-black/25 dark:shadow-black/60"
+                  />
                 </div>
-                <TrackMenu getTracks={() => [track]} className="text-foreground/70 hover:bg-foreground/10 hover:text-foreground" />
-              </div>
+              )}
 
-              <div className="flex flex-col gap-1.5">
-                <SeekBar />
-                <SeekTimes />
-              </div>
+              <div className="flex w-full max-w-xl shrink-0 flex-col gap-4">
+                {/* Heart · title · menu, as in the Android player */}
+                <div className="flex items-center gap-2">
+                  <StarButton kind="song" id={track.id} starred={track.starred} />
+                  <div className="min-w-0 flex-1 text-center">
+                    <Marquee as="h2" title={track.title} className="text-2xl font-light md:text-3xl">
+                      {track.title}
+                    </Marquee>
+                    <p className="mt-1 truncate text-sm text-foreground/70">
+                      <TrackLink to="artist" id={track.artistId} label={track.artist} />
+                      {track.album && ' • '}
+                      <TrackLink to="album" id={track.albumId} label={track.album} />
+                    </p>
+                  </div>
+                  <TrackMenu getTracks={() => [track]} className="text-foreground/70 hover:bg-foreground/10 hover:text-foreground" />
+                </div>
 
-              <div className="flex items-center justify-between">
-                <ShuffleButton />
-                <PreviousButton />
-                <PlayPauseButton size="lg" />
-                <NextButton />
-                <RepeatButton />
-              </div>
+                <div className="flex flex-col gap-1.5">
+                  <SeekBar />
+                  <SeekTimes />
+                </div>
 
-              <div className="flex items-center justify-center">
-                <span className="text-xs text-foreground/60 tabular-nums">{position}</span>
+                <div className="flex items-center justify-between">
+                  <ShuffleButton />
+                  <PreviousButton />
+                  <PlayPauseButton size="lg" />
+                  <NextButton />
+                  <RepeatButton />
+                </div>
+
+                <div className="flex items-center justify-center">
+                  <span className="text-xs text-foreground/60 tabular-nums">{position}</span>
+                </div>
+                <VolumeControl className="hidden justify-center md:flex" />
               </div>
-              <VolumeControl className="hidden justify-center md:flex" />
             </div>
+            {splitLyrics && <LyricsView track={track} large className="mr-8 mb-8 min-h-0 bg-transparent" />}
           </div>
         )}
       </div>

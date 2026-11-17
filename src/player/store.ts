@@ -27,6 +27,8 @@ interface PlayerState {
   currentTime: number
   duration: number
   fullPlayerOpen: boolean
+  /** Wide screens: lyrics column beside the artwork in the full player (separate from the side panel). */
+  fullPlayerLyrics: boolean
   /** The full player's side panel: queue or lyrics (one at a time), or closed. */
   panel: 'queue' | 'lyrics' | null
 }
@@ -60,6 +62,7 @@ export const usePlayerStore = create<PlayerState & PlayerActions>()(
       currentTime: 0,
       duration: 0,
       fullPlayerOpen: false,
+      fullPlayerLyrics: false,
       panel: null,
 
       set: (partial) => set(partial),

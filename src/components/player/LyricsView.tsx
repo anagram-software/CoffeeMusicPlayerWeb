@@ -14,7 +14,16 @@ import { openSettings } from '@/stores/ui'
  * art). Synced lyrics follow playback and lines can be clicked to seek;
  * plain lyrics just scroll, with section labels in an accent colour.
  */
-export function LyricsView({ track, className }: { track: Track; className?: string }) {
+export function LyricsView({
+  track,
+  className,
+  large,
+}: {
+  track: Track
+  className?: string
+  /** Big, left-aligned text: the wide-screen full player's lyrics column. */
+  large?: boolean
+}) {
   const { data: lyrics, isPending, isError, error } = useLyrics(track)
   const lrclibEnabled = useSettingsStore((s) => s.lrclib)
 
@@ -39,11 +48,17 @@ export function LyricsView({ track, className }: { track: Track; className?: str
           )}
         </Message>
       ) : lyrics.synced ? (
-        <SyncedLines lines={lyrics.lines} />
+        <SyncedLines lines={lyrics.lines} large={large} />
       ) : (
-        <div className="h-full overflow-y-auto px-6 pt-2 pb-8 text-center">
+        <div className={cn('h-full overflow-y-auto px-6 pt-2 pb-8', large ? 'text-left' : 'text-center')}>
           {lyrics.lines.map((l, i) => (
-            <p key={i} className={cn('min-h-[1.6em] text-base leading-relaxed md:text-lg', isSectionHeader(l.text) ? 'mt-4 font-medium text-[#2962ff] dark:text-[#82b1ff]' : 'text-foreground/90')}>
+            <p
+              key={i}
+              className={cn(
+                large ? 'min-h-[1.4em] text-2xl leading-snug font-semibold xl:text-3xl' : 'min-h-[1.6em] text-base leading-relaxed md:text-lg',
+                isSectionHeader(l.text) ? 'mt-4 font-medium text-[#2962ff] dark:text-[#82b1ff]' : 'text-foreground/90',
+              )}
+            >
               {l.text}
             </p>
           ))}
@@ -60,7 +75,7 @@ function Message({ children }: { children: React.ReactNode }) {
   return <div className="flex h-full flex-col items-center justify-center p-8 text-center text-sm text-foreground/70">{children}</div>
 }
 
-function SyncedLines({ lines }: { lines: LyricLine[] }) {
+function SyncedLines({ lines, large }: { lines: LyricLine[]; large?: boolean }) {
   // Selecting the index (not the time) re-renders only when the line changes.
   const active = usePlayerStore((s) => activeLineIndex(lines, s.currentTime * 1000))
   const containerRef = useRef<HTMLDivElement>(null)
@@ -80,7 +95,10 @@ function SyncedLines({ lines }: { lines: LyricLine[] }) {
       ref={containerRef}
       onWheel={markUserScroll}
       onTouchMove={markUserScroll}
-      className="h-full overflow-y-auto px-6 py-[40%] text-center [mask-image:linear-gradient(transparent,black_15%,black_85%,transparent)]"
+      className={cn(
+        'h-full overflow-y-auto px-6 py-[40%] [mask-image:linear-gradient(transparent,black_15%,black_85%,transparent)]',
+        large ? 'text-left' : 'text-center',
+      )}
     >
       {lines.map((l, i) => (
         <button
@@ -92,8 +110,13 @@ function SyncedLines({ lines }: { lines: LyricLine[] }) {
             player.seek((l.start ?? 0) / 1000)
           }}
           className={cn(
-            'block w-full py-1.5 text-lg leading-snug transition-all duration-300 md:text-xl',
-            i === active ? 'scale-105 font-semibold text-foreground' : 'text-foreground/35 hover:text-foreground/70',
+            'block w-full transition-all duration-300',
+            large
+              ? 'py-2 text-left text-3xl leading-tight font-bold xl:text-4xl' // buttons centre text by default
+              : 'py-1.5 text-lg leading-snug md:text-xl',
+            i === active
+              ? cn('text-foreground', large ? '' : 'scale-105 font-semibold')
+              : cn(large ? 'text-foreground/30' : 'text-foreground/35', 'hover:text-foreground/70'),
             !l.text && 'min-h-8',
           )}
         >
