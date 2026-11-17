@@ -41,7 +41,7 @@ export function SongRow({ song, lead = 'art', index, hideAlbum, onPlay, menuExtr
           onPlay?.()
         }
       }}
-      className="group flex h-16 cursor-pointer items-center gap-4 rounded-md px-2 transition-colors outline-none hover:bg-white/5 focus-visible:bg-white/5 focus-visible:ring-2 focus-visible:ring-ring"
+      className="group flex h-16 cursor-pointer items-center gap-4 rounded-md px-2 transition-colors outline-none hover:bg-foreground/5 focus-visible:bg-foreground/5 focus-visible:ring-2 focus-visible:ring-ring"
     >
       {lead === 'art' ? (
         <div className="relative size-12 shrink-0">
@@ -60,7 +60,7 @@ export function SongRow({ song, lead = 'art', index, hideAlbum, onPlay, menuExtr
 
       <div className="min-w-0 flex-1">
         <div className="flex items-center gap-2">
-          <span className={cn('truncate text-sm', isCurrent && 'text-section')}>{song.title}</span>
+          <span className={cn('truncate text-sm', isCurrent && 'text-section-ink')}>{song.title}</span>
           <ProviderBadge id={song.id} />
         </div>
         <div className="truncate text-xs text-muted-foreground">

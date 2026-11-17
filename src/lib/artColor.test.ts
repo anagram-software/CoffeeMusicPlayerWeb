@@ -20,6 +20,9 @@ describe('dominantColor', () => {
 
 describe('tintFromColor', () => {
   it('makes a dark tint with the same hue', () => {
-    expect(tintFromColor([255, 0, 0])).toBe('hsl(0 60% 24%)')
+    expect(tintFromColor([255, 0, 0])).toBe('hsl(0 70% 24%)')
+  })
+  it('makes a light pastel with the same hue', () => {
+    expect(tintFromColor([255, 0, 0], 'light')).toBe('hsl(0 65% 89%)')
   })
 })

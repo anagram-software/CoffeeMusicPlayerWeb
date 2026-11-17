@@ -5,6 +5,16 @@
     <link rel="icon" type="image/png" href="/icon.png" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="theme-color" content="#181818" />
+    <script>
+      // Apply the saved theme before first paint (no dark→light flash). Kept in sync with hooks/useTheme.ts.
+      try {
+        var theme = (JSON.parse(localStorage.getItem('coffee.settings') || '{}').state || {}).theme || 'system'
+        var dark = theme === 'dark' || (theme === 'system' && matchMedia('(prefers-color-scheme: dark)').matches)
+        document.documentElement.classList.toggle('dark', dark)
+        document.documentElement.style.colorScheme = dark ? 'dark' : 'light'
+        if (!dark) document.querySelector('meta[name="theme-color"]').setAttribute('content', '#fafafa')
+      } catch (e) {}
+    </script>
     <title>Coffee Music Player</title>
   </head>
   <body>

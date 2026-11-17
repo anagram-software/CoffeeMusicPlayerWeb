@@ -13,6 +13,8 @@
     --font-heading: var(--font-sans);
     --font-sans: 'Roboto', system-ui, sans-serif;
     --color-section: var(--section-accent);
+    /* Accent for text: deeper shades in light mode, where some accents are too faint on white. */
+    --color-section-ink: var(--section-ink);
     --color-section-foreground: var(--section-accent-foreground);
     --color-art: var(--art-background);
     --color-sidebar-ring: var(--sidebar-ring);
@@ -56,38 +58,40 @@
 }
 
 :root {
-    --background: oklch(1 0 0);
-    --foreground: oklch(0.145 0 0);
-    --card: oklch(1 0 0);
-    --card-foreground: oklch(0.145 0 0);
-    --popover: oklch(1 0 0);
-    --popover-foreground: oklch(0.145 0 0);
-    --primary: oklch(0.205 0 0);
-    --primary-foreground: oklch(0.985 0 0);
-    --secondary: oklch(0.97 0 0);
-    --secondary-foreground: oklch(0.205 0 0);
-    --muted: oklch(0.97 0 0);
-    --muted-foreground: oklch(0.556 0 0);
-    --accent: oklch(0.97 0 0);
-    --accent-foreground: oklch(0.205 0 0);
-    --destructive: oklch(0.577 0.245 27.325);
-    --border: oklch(0.922 0 0);
-    --input: oklch(0.922 0 0);
-    --ring: oklch(0.708 0 0);
+    /* Coffee light palette: the dark one (.dark, below) inverted, same accents. */
+    --background: #fafafa;
+    --foreground: #1a1a1a;
+    --card: #ffffff;
+    --card-foreground: #1a1a1a;
+    --popover: #ffffff;
+    --popover-foreground: #1a1a1a;
+    --primary: var(--section-accent);
+    --primary-foreground: var(--section-accent-foreground);
+    --secondary: #eeeeee;
+    --secondary-foreground: #1a1a1a;
+    --muted: #eeeeee;
+    --muted-foreground: #666666;
+    --accent: #eeeeee;
+    --accent-foreground: #1a1a1a;
+    --destructive: #e53935;
+    --border: oklch(0 0 0 / 10%);
+    --input: oklch(0 0 0 / 15%);
+    --ring: var(--section-accent);
     --chart-1: oklch(0.87 0 0);
     --chart-2: oklch(0.556 0 0);
     --chart-3: oklch(0.439 0 0);
     --chart-4: oklch(0.371 0 0);
     --chart-5: oklch(0.269 0 0);
     --radius: 0.625rem;
-    --sidebar: oklch(0.985 0 0);
-    --sidebar-foreground: oklch(0.145 0 0);
-    --sidebar-primary: oklch(0.205 0 0);
-    --sidebar-primary-foreground: oklch(0.985 0 0);
-    --sidebar-accent: oklch(0.97 0 0);
-    --sidebar-accent-foreground: oklch(0.205 0 0);
-    --sidebar-border: oklch(0.922 0 0);
-    --sidebar-ring: oklch(0.708 0 0);
+    --sidebar: #f2f2f2;
+    --sidebar-foreground: #1a1a1a;
+    --sidebar-primary: var(--section-accent);
+    --sidebar-primary-foreground: var(--section-accent-foreground);
+    --sidebar-accent: #e6e6e6;
+    --sidebar-accent-foreground: #1a1a1a;
+    --sidebar-border: oklch(0 0 0 / 8%);
+    --sidebar-ring: var(--section-accent);
+    --art-background: #dddddd;
 }
 
 /* Coffee dark palette, from the Android app (colorPrimary/colorBackground #181818). */
@@ -124,6 +128,8 @@
     --sidebar-border: oklch(1 0 0 / 6%);
     --sidebar-ring: var(--section-accent);
     --art-background: #444444;
+    /* Full-strength accent text in dark areas, incl. the always-dark full player in light mode. */
+    --section-ink: var(--section-accent);
 }
 
 /*
@@ -134,6 +140,7 @@
 :root {
     --section-accent: #ff4081;
     --section-accent-foreground: #ffffff;
+    --section-ink: var(--section-accent);
 }
 /*
  * Custom properties inherit as computed values, so --primary etc. (defined on
@@ -147,6 +154,7 @@
     --sidebar-primary: var(--section-accent);
     --sidebar-primary-foreground: var(--section-accent-foreground);
     --sidebar-ring: var(--section-accent);
+    --section-ink: var(--section-accent);
 }
 [data-section="home"] { --section-accent: #ff5252; --section-accent-foreground: #ffffff; }
 [data-section="favorites"] { --section-accent: #ff4081; --section-accent-foreground: #ffffff; }
@@ -155,6 +163,11 @@
 [data-section="settings"] { --section-accent: #ff6e40; --section-accent-foreground: #ffffff; }
 [data-section="search"] { --section-accent: #448aff; --section-accent-foreground: #ffffff; }
 [data-section="edit"] { --section-accent: #1de9b6; --section-accent-foreground: #1a1a1a; }
+
+/* Light mode: accent text in deeper shades (pills and buttons keep the originals). */
+html:not(.dark), html:not(.dark) [data-section] { --section-ink: color-mix(in oklab, var(--section-accent) 80%, black); }
+html:not(.dark)[data-section="playlists"], html:not(.dark) [data-section="playlists"] { --section-ink: #a87600; }
+html:not(.dark)[data-section="edit"], html:not(.dark) [data-section="edit"] { --section-ink: #00897b; }
 
 @layer base {
   * {

@@ -56,7 +56,7 @@ export function ListSkeleton({ count = 10 }: { count?: number }) {
 export function SectionTitle({ children, action }: { children: React.ReactNode; action?: React.ReactNode }) {
   return (
     <div className="mb-3 flex items-center justify-between gap-4">
-      <h2 className="text-xs font-medium tracking-wider text-section uppercase">{children}</h2>
+      <h2 className="text-xs font-medium tracking-wider text-section-ink uppercase">{children}</h2>
       {action}
     </div>
   )

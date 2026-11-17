@@ -3,6 +3,7 @@ import { CoverArt } from '@/components/CoverArt'
 import { StarButton } from '@/components/StarButton'
 import { NextButton, PlayPauseButton, PreviousButton, RepeatButton, SeekBar, ShuffleButton, VolumeControl } from '@/components/player/controls'
 import { Button } from '@/components/ui/button'
+import { useResolvedTheme } from '@/hooks/useTheme'
 import { useArtColor } from '@/lib/artColor'
 import { useCurrentTrack, usePlayerStore } from '@/player/store'
 
@@ -13,18 +14,21 @@ import { useCurrentTrack, usePlayerStore } from '@/player/store'
  */
 export function PlayerBar() {
   const track = useCurrentTrack()
-  const tint = useArtColor(track?.coverArt)
+  const theme = useResolvedTheme()
+  // Dark mode: the dark art tint blended into the bar. Light mode: a pastel of the same hue.
+  const tint = useArtColor(track?.coverArt, theme)
+  const tintAmount = theme === 'dark' ? 55 : 90
   const progress = usePlayerStore((s) => (s.duration ? (s.currentTime / s.duration) * 100 : 0))
   const openFull = (queue = false) => usePlayerStore.setState({ fullPlayerOpen: true, ...(queue && { panel: 'queue' as const }) })
 
   return (
     <footer
       className="relative border-t border-border bg-card transition-colors duration-700"
-      style={tint ? { backgroundColor: `color-mix(in oklab, ${tint} 45%, var(--card))` } : undefined}
+      style={tint ? { backgroundColor: `color-mix(in oklab, ${tint} ${tintAmount}%, var(--card))` } : undefined}
     >
       {/* Mobile progress line along the top edge */}
-      <div className="absolute inset-x-0 top-0 h-0.5 bg-white/10 md:hidden">
-        <div className="h-full bg-white" style={{ width: `${progress}%` }} />
+      <div className="absolute inset-x-0 top-0 h-0.5 bg-foreground/10 md:hidden">
+        <div className="h-full bg-foreground" style={{ width: `${progress}%` }} />
       </div>
 
       <div className="flex h-16 items-center gap-3 px-3 md:grid md:h-20 md:grid-cols-[1fr_minmax(0,36rem)_1fr] md:gap-6 md:px-5">
@@ -41,13 +45,13 @@ export function PlayerBar() {
               <CoverArt id={track?.coverArt} size={112} className="size-11 rounded md:size-14" />
               {track && (
                 <div className="absolute inset-0 hidden items-center justify-center rounded bg-black/50 opacity-0 transition-opacity group-hover:opacity-100 md:flex">
-                  <MdExpandLess className="size-7" />
+                  <MdExpandLess className="size-7 text-white" />
                 </div>
               )}
             </div>
             <div className="min-w-0">
               <div className="truncate text-sm font-medium">{track?.title ?? 'Nothing playing'}</div>
-              <div className="truncate text-xs text-white/60">
+              <div className="truncate text-xs text-muted-foreground">
                 {track ? [track.artist, track.album].filter(Boolean).join(' • ') : 'Pick something from your library'}
               </div>
             </div>

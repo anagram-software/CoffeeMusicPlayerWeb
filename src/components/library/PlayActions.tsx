@@ -29,14 +29,14 @@ export function PlayActions({
       <Button
         size="lg"
         variant="outline"
-        className="h-10 rounded-full border-white/30 bg-transparent px-5 tracking-wider text-white uppercase hover:bg-white/10"
+        className="h-10 rounded-full border-foreground/30 bg-transparent px-5 tracking-wider text-foreground uppercase hover:bg-foreground/10"
         disabled={empty}
         onClick={() => player.playQueue(tracks, Math.floor(Math.random() * tracks.length), { shuffle: true })}
       >
         <MdShuffle className="size-5" /> Shuffle
       </Button>
       {star && <StarButton {...star} />}
-      {!empty && <TrackMenu getTracks={() => tracks} className="text-white" />}
+      {!empty && <TrackMenu getTracks={() => tracks} className="text-foreground" />}
       {children}
     </div>
   )

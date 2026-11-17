@@ -97,7 +97,7 @@ function Biography({ html, lastFmUrl }: { html: string; lastFmUrl?: string }) {
       <SectionTitle>About</SectionTitle>
       <p className={`text-sm leading-relaxed whitespace-pre-line text-muted-foreground ${expanded ? '' : 'line-clamp-4'}`}>{text}</p>
       <div className="mt-2 flex gap-4 text-xs">
-        <button type="button" className="font-medium text-section hover:underline" onClick={() => setExpanded((e) => !e)}>
+        <button type="button" className="font-medium text-section-ink hover:underline" onClick={() => setExpanded((e) => !e)}>
           {expanded ? 'Show less' : 'Read more'}
         </button>
         {lastFmUrl && (

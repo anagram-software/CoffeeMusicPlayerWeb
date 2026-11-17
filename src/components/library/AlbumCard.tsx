@@ -48,7 +48,7 @@ export function GridCard({
         </div>
         {action}
       </div>
-      <ProviderBadge id={badgeId} className="absolute top-2 left-2 bg-black/60 backdrop-blur-sm" />
+      <ProviderBadge id={badgeId} className="absolute top-2 left-2 bg-black/60 text-white/80 backdrop-blur-sm" />
       <div className="pointer-events-none absolute inset-0 rounded-md ring-1 ring-white/5 ring-inset" />
     </div>
   )

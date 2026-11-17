@@ -8,7 +8,7 @@ export function ShuffleAllRow({ count, onShuffle }: { count: number; onShuffle: 
       type="button"
       onClick={onShuffle}
       disabled={count === 0}
-      className="flex h-16 w-full items-center gap-4 rounded-md px-2 text-left transition-colors hover:bg-white/5 disabled:opacity-50"
+      className="flex h-16 w-full items-center gap-4 rounded-md px-2 text-left transition-colors hover:bg-foreground/5 disabled:opacity-50"
     >
       <div className="flex size-12 shrink-0 items-center justify-center rounded-full bg-section text-section-foreground">
         <MdShuffle className="size-6" />

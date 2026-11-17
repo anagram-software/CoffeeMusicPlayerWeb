@@ -31,7 +31,7 @@ export function PlayPauseButton({ size = 'md', className }: { size?: 'sm' | 'md'
       disabled={disabled}
       aria-label={playing ? 'Pause' : 'Play'}
       className={cn(
-        'relative flex shrink-0 items-center justify-center rounded-full bg-white text-black transition-transform hover:scale-105 active:scale-95 disabled:opacity-40 disabled:hover:scale-100',
+        'relative flex shrink-0 items-center justify-center rounded-full bg-foreground text-background transition-transform hover:scale-105 active:scale-95 disabled:opacity-40 disabled:hover:scale-100',
         size === 'sm' && 'size-9',
         size === 'md' && 'size-11',
         size === 'lg' && 'size-16',
@@ -71,7 +71,7 @@ export function ShuffleButton({ className }: { className?: string }) {
       onClick={() => player.toggleShuffle()}
       aria-label="Shuffle"
       aria-pressed={shuffle}
-      className={cn(shuffle ? 'text-white' : 'text-white/40', className)}
+      className={cn(shuffle ? 'text-foreground' : 'text-foreground/40', className)}
     >
       <MdShuffle className="size-5" />
     </Button>
@@ -87,7 +87,7 @@ export function RepeatButton({ className }: { className?: string }) {
       size="icon-lg"
       onClick={() => player.cycleRepeat()}
       aria-label={`Repeat: ${repeat}`}
-      className={cn(repeat === 'off' ? 'text-white/40' : 'text-white', className)}
+      className={cn(repeat === 'off' ? 'text-foreground/40' : 'text-foreground', className)}
     >
       <Icon className="size-5" />
     </Button>
@@ -105,7 +105,7 @@ export function SeekBar({ className, compact }: { className?: string; compact?: 
   const [dragging, setDragging] = useState<number | null>(null)
   const shown = dragging ?? currentTime
 
-  const time = (t: number) => <span className="w-10 shrink-0 text-xs text-white/60 tabular-nums">{formatDuration(t)}</span>
+  const time = (t: number) => <span className="w-10 shrink-0 text-xs text-muted-foreground tabular-nums">{formatDuration(t)}</span>
 
   return (
     <div className={cn('flex items-center gap-3', compact && 'gap-2', className)}>
@@ -122,9 +122,9 @@ export function SeekBar({ className, compact }: { className?: string; compact?: 
           player.seek(v)
           setDragging(null)
         }}
-        className="**:data-[slot=slider-range]:bg-white **:data-[slot=slider-thumb]:border-white **:data-[slot=slider-track]:bg-white/20"
+        className="**:data-[slot=slider-range]:bg-foreground **:data-[slot=slider-thumb]:border-foreground **:data-[slot=slider-track]:bg-foreground/20"
       />
-      {compact && <span className="w-10 shrink-0 text-right text-xs text-white/60 tabular-nums">{formatDuration(duration)}</span>}
+      {compact && <span className="w-10 shrink-0 text-right text-xs text-muted-foreground tabular-nums">{formatDuration(duration)}</span>}
     </div>
   )
 }
@@ -133,7 +133,7 @@ export function SeekTimes() {
   const currentTime = usePlayerStore((s) => s.currentTime)
   const duration = usePlayerStore((s) => s.duration)
   return (
-    <div className="flex justify-between text-xs text-white/60 tabular-nums">
+    <div className="flex justify-between text-xs text-muted-foreground tabular-nums">
       <span>{formatDuration(currentTime)}</span>
       <span>{formatDuration(duration)}</span>
     </div>
@@ -156,7 +156,7 @@ export function VolumeControl({ className }: { className?: string }) {
         step={0.01}
         value={[muted ? 0 : volume]}
         onValueChange={([v]) => player.setVolume(v)}
-        className="w-24 **:data-[slot=slider-range]:bg-white **:data-[slot=slider-thumb]:border-white **:data-[slot=slider-track]:bg-white/20"
+        className="w-24 **:data-[slot=slider-range]:bg-foreground **:data-[slot=slider-thumb]:border-foreground **:data-[slot=slider-track]:bg-foreground/20"
       />
     </div>
   )

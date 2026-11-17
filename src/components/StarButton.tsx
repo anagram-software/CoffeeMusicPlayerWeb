@@ -28,7 +28,7 @@ export function StarButton({ kind, id, starred, className, size = 'icon-lg' }: S
       }}
       aria-label={isStarred ? 'Remove from favorites' : 'Add to favorites'}
       aria-pressed={isStarred}
-      className={cn(isStarred ? 'text-section hover:text-section' : 'text-white/60 hover:text-white', className)}
+      className={cn(isStarred ? 'text-section-ink hover:text-section-ink' : 'text-foreground/60 hover:text-foreground', className)}
     >
       <Icon className="size-5" />
     </Button>

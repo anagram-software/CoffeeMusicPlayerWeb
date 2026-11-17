@@ -8,6 +8,7 @@ import { Marquee } from '@/components/Marquee'
 import { StarButton } from '@/components/StarButton'
 import { useMediaQuery } from '@/hooks/useMediaQuery'
 import { Button } from '@/components/ui/button'
+import { useResolvedTheme } from '@/hooks/useTheme'
 import { useArtColor } from '@/lib/artColor'
 import { cn } from '@/lib/utils'
 import type { Track } from '@/player/queue'
@@ -26,7 +27,9 @@ const close = () => usePlayerStore.setState({ fullPlayerOpen: false })
  */
 export function FullPlayer() {
   const track = useCurrentTrack()
-  const tint = useArtColor(track?.coverArt) ?? '#2a2a2a'
+  const theme = useResolvedTheme()
+  // Dark mode: a dark tint of the cover (white text). Light mode: a pastel of it (dark text).
+  const tint = useArtColor(track?.coverArt, theme) ?? (theme === 'dark' ? '#2a2a2a' : '#eeeeee')
   const panel = usePlayerStore((s) => s.panel)
   const togglePanel = (p: 'queue' | 'lyrics') => usePlayerStore.setState({ panel: panel === p ? null : p })
   const position = usePlayerStore((s) => `${s.index + 1}/${s.queue.length}`)
@@ -61,7 +64,7 @@ export function FullPlayer() {
     <motion.div
       role="dialog"
       aria-label="Now playing"
-      className="fixed inset-0 z-40 flex flex-col text-white transition-[background-color] duration-700"
+      className={cn('fixed inset-0 z-40 flex flex-col text-foreground transition-[background-color] duration-700', theme === 'dark' && 'dark')}
       style={{ backgroundColor: tint }}
       initial={{ y: '100%' }}
       animate={{ y: 0 }}
@@ -76,13 +79,19 @@ export function FullPlayer() {
         if (info.offset.y > 120 || info.velocity.y > 600) close()
       }}
     >
-      <div aria-hidden className="pointer-events-none absolute inset-0 bg-linear-to-b from-black/0 via-black/25 to-black/70" />
+      <div
+        aria-hidden
+        className={cn(
+          'pointer-events-none absolute inset-0 bg-linear-to-b',
+          theme === 'dark' ? 'from-black/0 via-black/25 to-black/70' : 'from-white/0 via-white/25 to-white/70',
+        )}
+      />
 
       <header className="relative flex h-14 shrink-0 touch-none items-center justify-between px-2 md:px-4" onPointerDown={startDrag}>
-        <Button variant="ghost" size="icon-lg" onClick={close} aria-label="Close player" className="text-white hover:bg-white/10">
+        <Button variant="ghost" size="icon-lg" onClick={close} aria-label="Close player" className="text-foreground hover:bg-foreground/10">
           <MdKeyboardArrowDown className="size-7" />
         </Button>
-        <span className="text-xs font-medium tracking-wider text-white/70 uppercase">Now playing</span>
+        <span className="text-xs font-medium tracking-wider text-foreground/70 uppercase">Now playing</span>
         <div className="flex items-center" onPointerDown={(e) => e.stopPropagation()}>
           <Button
             variant="ghost"
@@ -90,7 +99,7 @@ export function FullPlayer() {
             onClick={() => togglePanel('lyrics')}
             aria-label={panel === 'lyrics' ? 'Hide lyrics' : 'Show lyrics'}
             aria-pressed={panel === 'lyrics'}
-            className={cn('hover:bg-white/10', panel === 'lyrics' ? 'text-white' : 'text-white/60')}
+            className={cn('hover:bg-foreground/10', panel === 'lyrics' ? 'text-foreground' : 'text-foreground/60')}
           >
             <MdLyrics className="size-6" />
           </Button>
@@ -100,7 +109,7 @@ export function FullPlayer() {
             onClick={() => togglePanel('queue')}
             aria-label={panel === 'queue' ? 'Hide queue' : 'Show queue'}
             aria-pressed={panel === 'queue'}
-            className={cn('hover:bg-white/10', panel === 'queue' ? 'text-white' : 'text-white/60')}
+            className={cn('hover:bg-foreground/10', panel === 'queue' ? 'text-foreground' : 'text-foreground/60')}
           >
             <MdQueueMusic className="size-6" />
           </Button>
@@ -121,7 +130,7 @@ export function FullPlayer() {
             <CoverArt
               id={track.coverArt}
               size={1000}
-              className="size-[min(100cqw,100cqh,32rem)] rounded-lg shadow-2xl shadow-black/60"
+              className="size-[min(100cqw,100cqh,32rem)] rounded-lg shadow-2xl shadow-black/25 dark:shadow-black/60"
             />
           </div>
 
@@ -135,13 +144,13 @@ export function FullPlayer() {
                 <Marquee as="h2" title={track.title} className="text-2xl font-light md:text-3xl">
                   {track.title}
                 </Marquee>
-                <p className="mt-1 truncate text-sm text-white/70">
+                <p className="mt-1 truncate text-sm text-foreground/70">
                   <TrackLink to="artist" id={track.artistId} label={track.artist} />
                   {track.album && ' • '}
                   <TrackLink to="album" id={track.albumId} label={track.album} />
                 </p>
               </div>
-              <TrackMenu getTracks={() => [track]} className="text-white/70 hover:bg-white/10 hover:text-white" />
+              <TrackMenu getTracks={() => [track]} className="text-foreground/70 hover:bg-foreground/10 hover:text-foreground" />
             </div>
 
             <div className="flex flex-col gap-1.5">
@@ -158,7 +167,7 @@ export function FullPlayer() {
             </div>
 
             <div className="flex items-center justify-center">
-              <span className="text-xs text-white/60 tabular-nums">{position}</span>
+              <span className="text-xs text-foreground/60 tabular-nums">{position}</span>
             </div>
             <VolumeControl className="hidden justify-center md:flex" />
           </div>
@@ -176,7 +185,7 @@ function SidePanel({ panel, track, className }: { panel: 'queue' | 'lyrics'; tra
   return (
     <div className={cn('flex min-h-0 flex-col', className)}>
       <div className="px-4 py-3">
-        <h2 className="text-sm font-medium tracking-wider text-white uppercase">Lyrics</h2>
+        <h2 className="text-sm font-medium tracking-wider text-foreground uppercase">Lyrics</h2>
       </div>
       <LyricsView track={track} className="min-h-0 flex-1 rounded-none bg-transparent" />
     </div>
@@ -187,7 +196,7 @@ function TrackLink({ to, id, label }: { to: 'artist' | 'album'; id?: string; lab
   if (!label) return null
   if (!id) return <>{label}</>
   return (
-    <Link to={to === 'artist' ? '/artist/$id' : '/album/$id'} params={{ id }} onClick={close} className="hover:text-white hover:underline">
+    <Link to={to === 'artist' ? '/artist/$id' : '/album/$id'} params={{ id }} onClick={close} className="hover:text-foreground hover:underline">
       {label}
     </Link>
   )

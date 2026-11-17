@@ -33,7 +33,7 @@ export function CoverArt({ id, size, alt = '', fallback = 'music', className }: 
           className="absolute inset-0 size-full object-cover"
         />
       ) : (
-        <Icon className="absolute inset-0 m-auto size-1/3 text-white/30" />
+        <Icon className="absolute inset-0 m-auto size-1/3 text-foreground/25" />
       )}
     </div>
   )

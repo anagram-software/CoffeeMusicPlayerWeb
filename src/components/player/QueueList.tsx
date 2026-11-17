@@ -50,12 +50,12 @@ export function QueueList({ className }: { className?: string }) {
     <div className={cn('flex min-h-0 flex-col', className)}>
       <div className="flex items-center justify-between px-4 py-3">
         <div>
-          <h2 className="text-sm font-medium tracking-wider text-white uppercase">Queue</h2>
-          <p className="text-xs text-white/60">
+          <h2 className="text-sm font-medium tracking-wider text-foreground uppercase">Queue</h2>
+          <p className="text-xs text-foreground/60">
             {plural(queue.length, 'song')} · {formatDuration(remaining)} left
           </p>
         </div>
-        <Button variant="ghost" size="sm" onClick={() => player.clear()} disabled={queue.length === 0} className="text-white/70">
+        <Button variant="ghost" size="sm" onClick={() => player.clear()} disabled={queue.length === 0} className="text-foreground/70">
           Clear
         </Button>
       </div>
@@ -96,10 +96,10 @@ function QueueRow({
       }}
       style={{ transform: CSS.Translate.toString(transform), transition }}
       className={cn(
-        'group relative flex h-14 items-center gap-3 rounded-md px-2 hover:bg-white/10',
+        'group relative flex h-14 items-center gap-3 rounded-md px-2 hover:bg-foreground/10',
         state === 'played' && 'opacity-50',
-        state === 'current' && 'bg-white/10',
-        isDragging && 'z-10 bg-white/15 shadow-lg',
+        state === 'current' && 'bg-foreground/10',
+        isDragging && 'z-10 bg-foreground/15 shadow-lg',
       )}
     >
       <button
@@ -117,8 +117,8 @@ function QueueRow({
           )}
         </div>
         <div className="min-w-0">
-          <div className={cn('truncate text-sm text-white', state === 'current' && 'text-section')}>{track.title}</div>
-          <div className="truncate text-xs text-white/60">{track.artist}</div>
+          <div className={cn('truncate text-sm text-foreground', state === 'current' && 'text-section-ink')}>{track.title}</div>
+          <div className="truncate text-xs text-foreground/60">{track.artist}</div>
         </div>
       </button>
       <Button
@@ -126,7 +126,7 @@ function QueueRow({
         size="icon-sm"
         onClick={() => player.remove(item.qid)}
         aria-label={`Remove ${track.title} from queue`}
-        className="text-white/60 opacity-0 group-hover:opacity-100 focus-visible:opacity-100 max-md:opacity-100"
+        className="text-foreground/60 opacity-0 group-hover:opacity-100 focus-visible:opacity-100 max-md:opacity-100"
       >
         <MdClose className="size-4" />
       </Button>
@@ -135,7 +135,7 @@ function QueueRow({
         {...attributes}
         {...listeners}
         aria-label={`Reorder ${track.title}`}
-        className="cursor-grab touch-none rounded p-1 text-white/50 hover:text-white active:cursor-grabbing"
+        className="cursor-grab touch-none rounded p-1 text-foreground/50 hover:text-foreground active:cursor-grabbing"
       >
         <MdDragHandle className="size-5" />
       </button>

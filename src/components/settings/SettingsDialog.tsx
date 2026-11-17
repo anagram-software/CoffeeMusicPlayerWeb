@@ -7,7 +7,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } f
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Switch } from '@/components/ui/switch'
 import { useSessionStore } from '@/stores/session'
-import { maxBitRates, type StreamFormat, streamFormats, useSettingsStore } from '@/stores/settings'
+import { maxBitRates, type StreamFormat, streamFormats, type Theme, themes, useSettingsStore } from '@/stores/settings'
 import { useUiStore } from '@/stores/ui'
 
 /**
@@ -58,6 +58,7 @@ function SettingsContent() {
         />
       </SettingsGroup>
 
+      <AppearanceSettings />
       <PlaybackSettings />
       <EqualizerSettings />
       <LyricsSettings />
@@ -81,6 +82,28 @@ function SettingsContent() {
         <Row label="Version" value={__APP_VERSION__} />
       </SettingsGroup>
     </div>
+  )
+}
+
+function AppearanceSettings() {
+  const { theme, set } = useSettingsStore()
+  return (
+    <SettingsGroup title="Appearance" id="appearance">
+      <Row label="Theme" description="System follows your device's light or dark mode.">
+        <Select value={theme} onValueChange={(v) => set({ theme: v as Theme })}>
+          <SelectTrigger className="w-36" aria-label="Theme">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent align="end">
+            {Object.entries(themes).map(([value, label]) => (
+              <SelectItem key={value} value={value}>
+                {label}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </Row>
+    </SettingsGroup>
   )
 }
 

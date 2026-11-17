@@ -51,7 +51,7 @@ function SearchPage() {
       {/* Search box + result-type tabs, inside the frosted top bar */}
       <TopBarSlot>
         <div className="px-4 pb-1 md:px-6">
-          <div className="flex h-11 items-center gap-3 rounded-lg bg-white/5 px-3 ring-section focus-within:ring-2">
+          <div className="flex h-11 items-center gap-3 rounded-lg bg-foreground/5 px-3 ring-section focus-within:ring-2">
             <MdSearch className="size-5 shrink-0 text-muted-foreground" />
             <input
               autoFocus

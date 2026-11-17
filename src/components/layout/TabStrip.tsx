@@ -16,7 +16,7 @@ export function TabStrip({ tabs, inline }: TabStripProps) {
           <li key={t.label}>
             <Link
               {...t.link}
-              className="relative block px-4 py-3 text-sm font-medium tracking-wide whitespace-nowrap text-muted-foreground uppercase transition-colors hover:text-foreground data-[status=active]:text-section data-[status=active]:after:absolute data-[status=active]:after:inset-x-2 data-[status=active]:after:bottom-0 data-[status=active]:after:h-0.5 data-[status=active]:after:bg-section"
+              className="relative block px-4 py-3 text-sm font-medium tracking-wide whitespace-nowrap text-muted-foreground uppercase transition-colors hover:text-foreground data-[status=active]:text-section-ink data-[status=active]:after:absolute data-[status=active]:after:inset-x-2 data-[status=active]:after:bottom-0 data-[status=active]:after:h-0.5 data-[status=active]:after:bg-section"
             >
               {t.label}
             </Link>

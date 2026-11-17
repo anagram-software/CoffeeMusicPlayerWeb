@@ -56,7 +56,7 @@ function AlbumPage() {
         {discs.map(([disc, discSongs]) => (
           <section key={disc}>
             {discs.length > 1 && (
-              <h2 className="px-4 pt-4 pb-1 text-xs font-medium tracking-wider text-section uppercase">
+              <h2 className="px-4 pt-4 pb-1 text-xs font-medium tracking-wider text-section-ink uppercase">
                 Disc {disc}
                 {album.discTitles?.find((d) => d.disc === disc)?.title ? ` · ${album.discTitles.find((d) => d.disc === disc)!.title}` : ''}
               </h2>

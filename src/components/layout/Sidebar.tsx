@@ -32,7 +32,7 @@ export function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
                 data-active={current === id || undefined}
                 className="group flex items-center gap-4 rounded-lg px-3 py-2.5 text-sm text-muted-foreground transition-colors hover:bg-sidebar-accent hover:text-foreground data-active:bg-section/12 data-active:text-foreground"
               >
-                <Icon className="size-5 shrink-0 transition-colors group-data-active:text-section" />
+                <Icon className="size-5 shrink-0 transition-colors group-data-active:text-section-ink" />
                 {label}
               </Link>
             </li>
@@ -73,7 +73,7 @@ function SidebarPlaylist({ playlist, onNavigate }: { playlist: PlaylistInfo; onN
         params={{ id: playlist.id }}
         onClick={onNavigate}
         title={playlist.name}
-        className="flex items-center gap-3 rounded-lg py-1.5 pr-9 pl-3 text-sm text-muted-foreground transition-colors group-hover/item:bg-sidebar-accent group-hover/item:text-foreground data-[status=active]:text-section"
+        className="flex items-center gap-3 rounded-lg py-1.5 pr-9 pl-3 text-sm text-muted-foreground transition-colors group-hover/item:bg-sidebar-accent group-hover/item:text-foreground data-[status=active]:text-section-ink"
       >
         <CoverArt id={playlist.coverArt} size={64} className="size-8 shrink-0 rounded" />
         <span className="truncate">{playlist.name}</span>
@@ -82,7 +82,7 @@ function SidebarPlaylist({ playlist, onNavigate }: { playlist: PlaylistInfo; onN
         playlist={playlist}
         side="right"
         align="start"
-        className="absolute top-1/2 right-1.5 size-7 -translate-y-1/2 text-muted-foreground opacity-0 group-hover/item:opacity-100 hover:bg-white/10 hover:text-foreground focus-visible:opacity-100 data-[state=open]:opacity-100 max-md:opacity-100"
+        className="absolute top-1/2 right-1.5 size-7 -translate-y-1/2 text-muted-foreground opacity-0 group-hover/item:opacity-100 hover:bg-foreground/10 hover:text-foreground focus-visible:opacity-100 data-[state=open]:opacity-100 max-md:opacity-100"
       />
     </li>
   )

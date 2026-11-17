@@ -2,7 +2,7 @@
 export function SettingsGroup({ title, id, children }: { title: string; id?: string; children: React.ReactNode }) {
   return (
     <section id={id} className="mt-6 scroll-mt-4">
-      <h2 className="mb-1 text-xs font-medium tracking-wider text-section uppercase">{title}</h2>
+      <h2 className="mb-1 text-xs font-medium tracking-wider text-section-ink uppercase">{title}</h2>
       <div className="divide-y divide-border">{children}</div>
     </section>
   )

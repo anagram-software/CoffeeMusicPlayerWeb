@@ -52,12 +52,22 @@ export function dominantColor(data: Uint8ClampedArray): RGB | null {
 }
 
 /** A dark background tint derived from a colour, readable under white text. */
-export function tintFromColor(rgb: RGB): string {
+export type TintVariant = 'dark' | 'light'
+
+/**
+ * A tint with the colour's hue: dark (readable under white text: the full
+ * player, the dark-mode bar) or a light pastel (readable under dark text:
+ * the light-mode bar).
+ */
+export function tintFromColor(rgb: RGB, variant: TintVariant = 'dark'): string {
   const [h, s] = rgbToHsl(rgb)
-  return `hsl(${Math.round(h)} ${Math.round(Math.min(s, 0.6) * 100)}% 24%)`
+  const hue = Math.round(h)
+  return variant === 'dark'
+    ? `hsl(${hue} ${Math.round(Math.min(s, 0.7) * 100)}% 24%)`
+    : `hsl(${hue} ${Math.round(Math.min(s, 0.65) * 100)}% 89%)`
 }
 
-async function extractColor(url: string): Promise<string | null> {
+async function extractColor(url: string): Promise<RGB | null> {
   const img = new Image()
   img.crossOrigin = 'anonymous' // Navidrome sends CORS headers, so the canvas stays readable.
   img.src = url
@@ -68,12 +78,11 @@ async function extractColor(url: string): Promise<string | null> {
   const ctx = canvas.getContext('2d', { willReadFrequently: true })
   if (!ctx) return null
   ctx.drawImage(img, 0, 0, size, size)
-  const rgb = dominantColor(ctx.getImageData(0, 0, size, size).data)
-  return rgb ? tintFromColor(rgb) : null
+  return dominantColor(ctx.getImageData(0, 0, size, size).data)
 }
 
 /** Background tint for a cover, like the Android player's Palette colours. Null until known. */
-export function useArtColor(coverArt: string | undefined): string | null {
+export function useArtColor(coverArt: string | undefined, variant: TintVariant = 'dark'): string | null {
   const client = useSubsonic()
   const { data } = useQuery({
     queryKey: ['artColor', coverArt],
@@ -83,5 +92,5 @@ export function useArtColor(coverArt: string | undefined): string | null {
     gcTime: 60 * 60 * 1000,
     retry: false,
   })
-  return data ?? null
+  return data ? tintFromColor(data, variant) : null
 }

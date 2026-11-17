@@ -49,6 +49,7 @@ container needs no access to it; Navidrome already allows cross-origin requests.
   media keys / lock screen (Media Session), scrobbling, resume after reload
 - Full player tinted from the album art, with synced lyrics (server, or LRCLIB if enabled)
 - Favorites (starring), playlists (create, edit, reorder), Home
+- Light and dark themes, following the device by default (Settings → Appearance)
 - Equalizer in Settings (off by default): 5 bands with presets, bass boost, virtualizer, reverb (Web Audio)
 
 ## Layout

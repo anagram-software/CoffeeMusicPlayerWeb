@@ -141,7 +141,7 @@ function Row({ title, seeAll, loading, children }: { title: string; seeAll: Link
   return (
     <section>
       <div className="mb-3 flex items-center justify-between gap-2">
-        <h2 className="text-xs font-medium tracking-wider text-section uppercase">{title}</h2>
+        <h2 className="text-xs font-medium tracking-wider text-section-ink uppercase">{title}</h2>
         <div className="flex items-center gap-1">
           <Button variant="ghost" size="icon-sm" onClick={() => step(-1)} disabled={edges.start} aria-label={`Scroll ${title} left`}>
             <MdChevronLeft className="size-5" />

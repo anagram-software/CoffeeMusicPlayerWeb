@@ -65,12 +65,12 @@ function PlaylistPage() {
         subtitle={playlist.owner && playlist.owner !== username ? `by ${playlist.owner}` : undefined}
         tags={[plural(playlist.songCount, 'song'), playlist.duration > 0 && formatTotalDuration(playlist.duration), playlist.public ? 'Public' : 'Private']}
       >
-        {playlist.comment && <p className="max-w-xl text-sm text-white/70">{playlist.comment}</p>}
+        {playlist.comment && <p className="max-w-xl text-sm text-muted-foreground">{playlist.comment}</p>}
         <PlayActions tracks={tracks}>
           {editable && (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="icon" aria-label="Edit playlist" className="text-white">
+                <Button variant="ghost" size="icon" aria-label="Edit playlist" className="text-foreground">
                   <MdSettings className="size-5" />
                 </Button>
               </DropdownMenuTrigger>
