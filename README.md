@@ -21,6 +21,27 @@ Try it against the public demo server: `demo.navidrome.org`, user `demo`, passwo
 Vite · React 19 · TypeScript · TanStack Router (file-based, `src/routes/`) · TanStack Query ·
 Zustand · Tailwind CSS v4 · shadcn/ui (Radix) · react-icons (Material Design)
 
+## Docker
+
+```bash
+docker build -t coffee-music-player-web .
+docker run -d --name coffee -p 8080:8080 coffee-music-player-web
+# → http://localhost:8080
+```
+
+Publish to Docker Hub as `thatudeshuk/coffee-music-player:<version>` and `:latest`
+(after `docker login`; the version comes from `package.json`):
+
+```bash
+npm run docker:publish          # PUSH=0 to build/tag only
+```
+
+Run the published image with Compose: see `compose.example.yaml`.
+
+The image is static files served by unprivileged nginx on port 8080 (config in
+`docker/nginx.conf`). The browser talks to your Navidrome server directly, so the
+container needs no access to it; Navidrome already allows cross-origin requests.
+
 ## Features
 
 - Library: songs, albums, artists, genres; album/artist/genre pages; search

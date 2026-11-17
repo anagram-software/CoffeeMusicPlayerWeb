@@ -1,0 +1,11 @@
+# Example: run the published image with Docker Compose.
+#   docker compose -f compose.example.yaml up -d
+# Update to the newest image:
+#   docker compose -f compose.example.yaml pull && docker compose -f compose.example.yaml up -d
+services:
+  coffee:
+    image: thatudeshuk/coffee-music-player:latest   # or pin a version, e.g. :0.1.0
+    container_name: coffee-music-player
+    ports:
+      - "8080:8080"   # drop this if a reverse proxy on the same Docker network serves it
+    restart: unless-stopped
