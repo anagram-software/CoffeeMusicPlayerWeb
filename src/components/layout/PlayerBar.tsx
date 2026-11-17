@@ -1,4 +1,4 @@
-import { MdExpandLess, MdLyrics, MdQueueMusic } from 'react-icons/md'
+import { MdExpandLess, MdClosedCaption, MdQueueMusic } from 'react-icons/md'
 import { CoverArt } from '@/components/CoverArt'
 import { StarButton } from '@/components/StarButton'
 import { togglePanel } from '@/components/player/sidePanelState'
@@ -79,7 +79,7 @@ export function PlayerBar() {
           <PlayPauseButton size="sm" className="md:hidden" />
           <NextButton className="md:hidden" />
           <VolumeControl className="mr-1 hidden lg:flex" />
-          <PanelButton label="Lyrics" icon={MdLyrics} active={panel === 'lyrics'} onClick={() => togglePanel('lyrics')} />
+          <PanelButton label="Lyrics" icon={MdClosedCaption} active={panel === 'lyrics'} onClick={() => togglePanel('lyrics')} />
           <PanelButton label="Queue" icon={MdQueueMusic} active={panel === 'queue'} onClick={() => togglePanel('queue')} />
         </div>
       </div>
@@ -87,7 +87,7 @@ export function PlayerBar() {
   )
 }
 
-function PanelButton({ label, icon: Icon, active, onClick }: { label: string; icon: typeof MdLyrics; active: boolean; onClick: () => void }) {
+function PanelButton({ label, icon: Icon, active, onClick }: { label: string; icon: typeof MdClosedCaption; active: boolean; onClick: () => void }) {
   return (
     <Button
       variant="ghost"

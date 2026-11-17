@@ -1,7 +1,7 @@
 import { Link } from '@tanstack/react-router'
 import { motion, useDragControls } from 'motion/react'
 import { useEffect } from 'react'
-import { MdKeyboardArrowDown, MdLyrics, MdQueueMusic } from 'react-icons/md'
+import { MdKeyboardArrowDown, MdClosedCaption, MdQueueMusic } from 'react-icons/md'
 import { CoverArt } from '@/components/CoverArt'
 import { TrackMenu } from '@/components/library/TrackMenu'
 import { Marquee } from '@/components/Marquee'
@@ -107,7 +107,7 @@ export function FullPlayer() {
           <div className="flex items-center" onPointerDown={(e) => e.stopPropagation()}>
             <HeaderToggle
               label="lyrics"
-              icon={MdLyrics}
+              icon={MdClosedCaption}
               active={splitLyrics}
               onClick={() => usePlayerStore.setState((s) => ({ fullPlayerLyrics: !s.fullPlayerLyrics }))}
             />
@@ -115,7 +115,7 @@ export function FullPlayer() {
         )}
         {mobile && (
           <div className="flex items-center" onPointerDown={(e) => e.stopPropagation()}>
-            <HeaderToggle label="lyrics" icon={MdLyrics} active={panel === 'lyrics'} onClick={() => togglePanel('lyrics')} />
+            <HeaderToggle label="lyrics" icon={MdClosedCaption} active={panel === 'lyrics'} onClick={() => togglePanel('lyrics')} />
             <HeaderToggle label="queue" icon={MdQueueMusic} active={panel === 'queue'} onClick={() => togglePanel('queue')} />
           </div>
         )}
@@ -190,7 +190,7 @@ export function FullPlayer() {
   )
 }
 
-function HeaderToggle({ label, icon: Icon, active, onClick }: { label: string; icon: typeof MdLyrics; active: boolean; onClick: () => void }) {
+function HeaderToggle({ label, icon: Icon, active, onClick }: { label: string; icon: typeof MdClosedCaption; active: boolean; onClick: () => void }) {
   return (
     <Button
       variant="ghost"

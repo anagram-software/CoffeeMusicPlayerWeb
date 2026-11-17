@@ -1,5 +1,5 @@
 import { useEffect, useRef } from 'react'
-import { MdLyrics } from 'react-icons/md'
+import { MdClosedCaption } from 'react-icons/md'
 import { useLyrics } from '@/hooks/useLyrics'
 import { activeLineIndex, isSectionHeader, type LyricLine } from '@/lib/lyrics'
 import { cn } from '@/lib/utils'
@@ -35,7 +35,7 @@ export function LyricsView({
         <Message>Couldn't load lyrics: {error.message}</Message>
       ) : !lyrics ? (
         <Message>
-          <MdLyrics className="mx-auto mb-3 size-10 opacity-50" />
+          <MdClosedCaption className="mx-auto mb-3 size-10 opacity-50" />
           No lyrics for this song.
           {!lrclibEnabled && (
             <p className="mt-2 text-xs text-foreground/50">

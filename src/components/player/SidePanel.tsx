@@ -1,4 +1,4 @@
-import { MdClose, MdLyrics, MdQueueMusic } from 'react-icons/md'
+import { MdClose, MdClosedCaption, MdQueueMusic } from 'react-icons/md'
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
 import { useCurrentTrack, usePlayerStore } from '@/player/store'
@@ -20,7 +20,7 @@ export function SidePanel({ className }: { className?: string }) {
     <div className={cn('flex min-h-0 flex-col', className)}>
       <div className="flex shrink-0 items-center gap-1 px-2 pt-2">
         <PanelTab id="queue" current={panel} label="Queue" icon={MdQueueMusic} />
-        <PanelTab id="lyrics" current={panel} label="Lyrics" icon={MdLyrics} />
+        <PanelTab id="lyrics" current={panel} label="Lyrics" icon={MdClosedCaption} />
         <div className="flex-1" />
         <Button variant="ghost" size="icon" onClick={() => usePlayerStore.setState({ panel: null })} aria-label="Close panel">
           <MdClose className="size-5" />
@@ -38,7 +38,7 @@ export function SidePanel({ className }: { className?: string }) {
   )
 }
 
-function PanelTab({ id, current, label, icon: Icon }: { id: Panel; current: Panel; label: string; icon: typeof MdLyrics }) {
+function PanelTab({ id, current, label, icon: Icon }: { id: Panel; current: Panel; label: string; icon: typeof MdClosedCaption }) {
   const active = id === current
   return (
     <button
