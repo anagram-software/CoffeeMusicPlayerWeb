@@ -9,6 +9,7 @@ import { albumQuery } from '@/lib/subsonic/queries'
 import { player } from '@/player/engine'
 import { toTrack } from '@/player/queue'
 import { getClient, useSubsonic } from '@/stores/session'
+import { AddToLibraryButton } from '@/components/library/AddToLibraryButton'
 import { PlayActions } from '@/components/library/PlayActions'
 
 export const Route = createFileRoute('/_app/album/$id')({
@@ -49,7 +50,9 @@ function AlbumPage() {
         }
         tags={[album.year ? String(album.year) : undefined, album.genre, plural(album.songCount, 'song'), formatTotalDuration(album.duration)]}
       >
-        <PlayActions tracks={tracks} star={{ kind: 'album', id: album.id, starred: album.starred }} />
+        <PlayActions tracks={tracks} star={{ kind: 'album', id: album.id, starred: album.starred }}>
+          <AddToLibraryButton album={album} />
+        </PlayActions>
       </DetailHeader>
 
       <div className="px-2 md:px-4">

@@ -22,7 +22,7 @@ export function PlayActions({
 }) {
   const empty = disabled || tracks.length === 0
   return (
-    <div className="mt-3 flex items-center gap-2">
+    <div className="mt-3 flex flex-wrap items-center justify-center gap-2 sm:justify-start">
       <Button size="lg" className="h-10 rounded-full px-5 uppercase tracking-wider" disabled={empty} onClick={() => player.playQueue(tracks, 0, { shuffle: false })}>
         <MdPlayArrow className="size-5" /> Play
       </Button>
