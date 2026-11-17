@@ -1,11 +1,9 @@
 import { Link } from '@tanstack/react-router'
 import { useCurrentSection } from '@/hooks/useCurrentSection'
 import { navSections, sections } from '@/lib/sections'
-import { useSessionStore } from '@/stores/session'
 
 /** Navigation list, used by the desktop sidebar and the mobile drawer. */
 export function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
-  const session = useSessionStore((s) => s.session)
   // Highlight by section, so e.g. an album page keeps "Library" highlighted.
   const current = useCurrentSection()
 
@@ -14,14 +12,7 @@ export function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
       {/* Mirrors the Android navigation_header */}
       <div className="flex items-center gap-3 px-5 pt-6 pb-5">
         <img src="/icon.png" alt="" className="size-9" />
-        <div className="min-w-0">
-          <div className="text-2xl leading-none font-thin tracking-wide">Coffee</div>
-          {session && (
-            <div className="mt-1 truncate text-xs text-muted-foreground" title={session.credentials.url}>
-              {session.user.name} · {new URL(session.credentials.url).host}
-            </div>
-          )}
-        </div>
+        <div className="text-2xl leading-none font-thin tracking-wide">Coffee</div>
       </div>
 
       <ul className="flex flex-col gap-0.5 px-2">

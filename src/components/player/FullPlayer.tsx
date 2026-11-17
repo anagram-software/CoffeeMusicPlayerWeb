@@ -1,7 +1,7 @@
 import { Link } from '@tanstack/react-router'
 import { motion, useDragControls } from 'motion/react'
 import { useEffect } from 'react'
-import { MdEqualizer, MdKeyboardArrowDown, MdLyrics, MdQueueMusic } from 'react-icons/md'
+import { MdKeyboardArrowDown, MdLyrics, MdQueueMusic } from 'react-icons/md'
 import { CoverArt } from '@/components/CoverArt'
 import { TrackMenu } from '@/components/library/TrackMenu'
 import { StarButton } from '@/components/StarButton'
@@ -10,7 +10,6 @@ import { Button } from '@/components/ui/button'
 import { useArtColor } from '@/lib/artColor'
 import { cn } from '@/lib/utils'
 import { useCurrentTrack, usePlayerStore } from '@/player/store'
-import { openSettings } from '@/stores/ui'
 import { NextButton, PlayPauseButton, PreviousButton, RepeatButton, SeekBar, SeekTimes, ShuffleButton, VolumeControl } from './controls'
 import { LyricsView } from './LyricsView'
 import { QueueList } from './QueueList'
@@ -84,16 +83,6 @@ export function FullPlayer() {
         <span className="text-xs font-medium tracking-wider text-white/70 uppercase">Now playing</span>
         {/* On narrow screens lyrics and queue share the art's space, so opening one closes the other. */}
         <div className="flex items-center" onPointerDown={(e) => e.stopPropagation()}>
-          {/* Opens Settings over the player, at the equalizer, so changes can be heard in place. */}
-          <Button
-            variant="ghost"
-            size="icon-lg"
-            onClick={() => openSettings('equalizer')}
-            aria-label="Equalizer"
-            className="text-white/60 hover:bg-white/10 hover:text-white"
-          >
-            <MdEqualizer className="size-6" />
-          </Button>
           <Button
             variant="ghost"
             size="icon-lg"

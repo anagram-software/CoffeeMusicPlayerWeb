@@ -16,6 +16,9 @@ export const Route = createFileRoute('/_app/')({
   component: HomePage,
 })
 
+/** The "What are we listening to?" banner; disabled for now. */
+const SHOW_SHUFFLE_CARD = false
+
 const albumRows: { sort: AlbumSort; title: string }[] = [
   { sort: 'newest', title: 'Recently added' },
   { sort: 'recent', title: 'Recently played' },
@@ -25,7 +28,7 @@ const albumRows: { sort: AlbumSort; title: string }[] = [
 function HomePage() {
   return (
     <div className="flex flex-col gap-8 px-4 pt-2 pb-10 md:px-6">
-      <ShuffleCard />
+      {SHOW_SHUFFLE_CARD && <ShuffleCard />}
       {albumRows.map((r) => (
         <AlbumRow key={r.sort} sort={r.sort} title={r.title} />
       ))}
