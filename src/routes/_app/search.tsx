@@ -5,6 +5,7 @@ import { MdClose, MdSearch, MdSearchOff } from 'react-icons/md'
 import { z } from 'zod'
 import { AlbumCard, ArtistCard } from '@/components/library/AlbumCard'
 import { SongRow } from '@/components/library/SongRow'
+import { TopBarSlot } from '@/components/layout/TopBarSlot'
 import { EmptyState, ErrorState, ListSkeleton, SectionTitle } from '@/components/library/states'
 import { useDebouncedValue } from '@/hooks/useDebouncedValue'
 import { searchQuery } from '@/lib/subsonic/queries'
@@ -38,25 +39,27 @@ function SearchPage() {
 
   return (
     <div className="px-4 pb-10 md:px-6">
-      <div className="sticky top-0 z-10 -mx-4 bg-background/90 px-4 py-3 backdrop-blur md:-mx-6 md:px-6">
-        <div className="flex h-11 items-center gap-3 rounded-lg bg-white/5 px-3 ring-section focus-within:ring-2">
-          <MdSearch className="size-5 shrink-0 text-muted-foreground" />
-          <input
-            autoFocus
-            type="search"
-            value={input}
-            onChange={(e) => setInput(e.target.value)}
-            placeholder="Songs, albums, artists"
-            aria-label="Search"
-            className="min-w-0 flex-1 bg-transparent text-base outline-none placeholder:text-muted-foreground [&::-webkit-search-cancel-button]:hidden"
-          />
-          {input && (
-            <button type="button" onClick={() => setInput('')} aria-label="Clear search" className="text-muted-foreground hover:text-foreground">
-              <MdClose className="size-5" />
-            </button>
-          )}
+      <TopBarSlot>
+        <div className="px-4 pb-3 md:px-6">
+          <div className="flex h-11 items-center gap-3 rounded-lg bg-white/5 px-3 ring-section focus-within:ring-2">
+            <MdSearch className="size-5 shrink-0 text-muted-foreground" />
+            <input
+              autoFocus
+              type="search"
+              value={input}
+              onChange={(e) => setInput(e.target.value)}
+              placeholder="Songs, albums, artists"
+              aria-label="Search"
+              className="min-w-0 flex-1 bg-transparent text-base outline-none placeholder:text-muted-foreground [&::-webkit-search-cancel-button]:hidden"
+            />
+            {input && (
+              <button type="button" onClick={() => setInput('')} aria-label="Clear search" className="text-muted-foreground hover:text-foreground">
+                <MdClose className="size-5" />
+              </button>
+            )}
+          </div>
         </div>
-      </div>
+      </TopBarSlot>
 
       {!debounced ? (
         <EmptyState icon={MdSearch} message="Search your library" />

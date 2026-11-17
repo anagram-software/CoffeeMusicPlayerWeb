@@ -17,8 +17,9 @@ export function useScrollMargin(ref: RefObject<HTMLElement | null>): number {
       setMargin(el.getBoundingClientRect().top - scrollEl.getBoundingClientRect().top + scrollEl.scrollTop)
     measure()
     const ro = new ResizeObserver(measure)
-    // Watch the scroll content itself: anything above the list growing/shrinking resizes it.
-    if (scrollEl.firstElementChild) ro.observe(scrollEl.firstElementChild)
+    // Watch the page content (<main>): anything above the list growing/shrinking resizes it.
+    const content = scrollEl.querySelector('[data-scroll-content]')
+    if (content) ro.observe(content)
     return () => ro.disconnect()
   }, [ref, scrollEl])
 

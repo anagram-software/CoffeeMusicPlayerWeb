@@ -11,6 +11,7 @@ import { usePlayerStore } from '@/player/store'
 import { useSessionStore } from '@/stores/session'
 import { PlayerBar } from './PlayerBar'
 import { ScrollElementContext } from './scrollElement'
+import { TopBarSlotContext } from './topBarSlot'
 import { Sidebar } from './Sidebar'
 import { TopBar } from './TopBar'
 
@@ -19,6 +20,7 @@ export function AppShell() {
   const hasSession = useSessionStore((s) => !!s.session)
   const [drawerOpen, setDrawerOpen] = useState(false)
   const [scrollEl, setScrollEl] = useState<HTMLElement | null>(null)
+  const [slotEl, setSlotEl] = useState<HTMLElement | null>(null)
   const fullPlayerOpen = usePlayerStore((s) => s.fullPlayerOpen)
 
   // The engine needs the session for stream URLs, so it starts here, not at app load.
@@ -43,16 +45,17 @@ export function AppShell() {
         <Sidebar />
       </aside>
 
-      <div className="flex min-h-0 min-w-0 flex-col">
-        <TopBar section={section} drawerOpen={drawerOpen} onDrawerOpenChange={setDrawerOpen} />
-        <main ref={setScrollEl} data-scroll-restoration-id="main" className="min-h-0 flex-1 overflow-y-auto">
-          <ScrollElementContext value={scrollEl}>
-            {/* Stable wrapper: virtual lists watch it to detect content resizes. */}
-            <div className="min-h-full">
+      {/* One scroll container for the top bar and the page, so content scrolls under the translucent top bar. */}
+      <div ref={setScrollEl} data-scroll-restoration-id="main" className="min-h-0 min-w-0 overflow-y-auto">
+        <TopBar section={section} drawerOpen={drawerOpen} onDrawerOpenChange={setDrawerOpen} onSlotRef={setSlotEl} />
+        <ScrollElementContext value={scrollEl}>
+          <TopBarSlotContext value={slotEl}>
+            {/* Stable element: virtual lists watch it to detect content resizes. */}
+            <main data-scroll-content>
               <Outlet />
-            </div>
-          </ScrollElementContext>
-        </main>
+            </main>
+          </TopBarSlotContext>
+        </ScrollElementContext>
       </div>
 
       <div className="md:col-span-2">
