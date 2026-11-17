@@ -1,0 +1,13 @@
+# Build the production image from this checkout and run it.
+#   docker compose up -d --build     → http://localhost:8080
+#   PORT=9000 docker compose up -d   → another host port
+#   docker compose down              → stop and remove
+# To run the published image instead, see compose.example.yaml.
+services:
+  coffee:
+    build: .
+    image: coffee-music-player-web:local
+    container_name: coffee-music-player-web
+    ports:
+      - "${PORT:-8080}:8080"
+    restart: unless-stopped

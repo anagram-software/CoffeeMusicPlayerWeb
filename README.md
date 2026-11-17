@@ -24,9 +24,9 @@ Zustand · Tailwind CSS v4 · shadcn/ui (Radix) · react-icons (Material Design)
 ## Docker
 
 ```bash
-docker build -t coffee-music-player-web .
-docker run -d --name coffee -p 8080:8080 coffee-music-player-web
-# → http://localhost:8080
+docker compose up -d --build      # builds from this checkout → http://localhost:8080
+PORT=9000 docker compose up -d    # different host port
+docker compose down
 ```
 
 Publish to Docker Hub as `thatudeshuk/coffee-music-player:<version>` and `:latest`
