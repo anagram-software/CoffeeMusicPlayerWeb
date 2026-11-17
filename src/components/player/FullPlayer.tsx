@@ -21,7 +21,7 @@ import { useSettingsStore } from '@/stores/settings'
 import { NextButton, PlayPauseButton, PreviousButton, RepeatButton, SeekBar, SeekTimes, ShuffleButton, VolumeControl } from './controls'
 import { LyricsView } from './LyricsView'
 import { QueueList } from './QueueList'
-import { SIDE_PANEL_WIDTH, togglePanel } from './sidePanelState'
+import { togglePanel } from './sidePanelState'
 
 const close = () => usePlayerStore.setState({ fullPlayerOpen: false })
 
@@ -31,7 +31,7 @@ const close = () => usePlayerStore.setState({ fullPlayerOpen: false })
  * player; drag the art/header down (or press Esc) to close.
  *
  * Queue and lyrics: on wide screens they're the app's side panel (opened from
- * the player bar), kept visible beside the player. On mobile they live inside
+ * the player bar), which the player covers while open. On mobile they live inside
  * the player, toggled from its header: lyrics replace the artwork, the queue
  * replaces everything below the header.
  */
@@ -52,9 +52,8 @@ export function FullPlayer() {
     select: (song) => toTrack(song),
   })
   const dragControls = useDragControls()
-  // Wide screens dock the side panel; keep it visible beside the player.
+  // Wide screens (1024px+): optional lyrics column. The player covers the whole app, docked side panel included.
   const wide = useMediaQuery('(min-width: 1024px)')
-  const docked = wide && !!panel
   const mobile = !useMediaQuery('(min-width: 768px)')
   const inlinePanel = mobile ? panel : null
   // Wide screens: optional big lyrics column beside the artwork + controls.
@@ -89,7 +88,7 @@ export function FullPlayer() {
       role="dialog"
       aria-label="Now playing"
       className={cn('fixed inset-0 z-40 flex flex-col text-foreground transition-[background-color] duration-700', theme === 'dark' && 'dark')}
-      style={{ backgroundColor: tint, right: docked ? SIDE_PANEL_WIDTH : 0 }}
+      style={{ backgroundColor: tint }}
       initial={{ y: '100%' }}
       animate={{ y: 0 }}
       exit={{ y: '100%' }}

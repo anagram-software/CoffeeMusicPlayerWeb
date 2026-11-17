@@ -1,6 +1,6 @@
 import { usePlayerStore } from '@/player/store'
 
-/** Width of the docked queue/lyrics panel; the full player leaves this much room for it on wide screens. */
+/** Width of the docked queue/lyrics panel on wide screens. */
 export const SIDE_PANEL_WIDTH = '22rem'
 
 export type Panel = 'queue' | 'lyrics'
