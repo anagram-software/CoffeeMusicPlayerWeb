@@ -12,7 +12,11 @@ const router = createRouter({
   defaultPreload: 'intent',
   // Let TanStack Query decide freshness instead of the router cache.
   defaultPreloadStaleTime: 0,
+  // Back/forward restores each page's scroll position; any other navigation starts at the
+  // top. Our content scrolls in AppShell's container, not the window, so list it too
+  // (otherwise its scroll position carries over to the next page).
   scrollRestoration: true,
+  scrollToTopSelectors: ['window', '[data-scroll-restoration-id="main"]'],
 })
 
 declare module '@tanstack/react-router' {
