@@ -111,12 +111,12 @@ function QueueRow({
           <CoverArt id={track.coverArt} size={80} className="size-full rounded" />
           {state === 'current' && (
             <div className="absolute inset-0 flex items-center justify-center rounded bg-black/50">
-              <PlayingBars playing={playing} />
+              <PlayingBars playing={playing} barClassName="bg-white" />
             </div>
           )}
         </div>
         <div className="min-w-0">
-          <div className={cn('truncate text-sm text-foreground', state === 'current' && 'text-section-ink')}>{track.title}</div>
+          <div className={cn('truncate text-sm text-foreground', state === 'current' && 'font-medium')}>{track.title}</div>
           <div className="truncate text-xs text-foreground/60">{track.artist}</div>
         </div>
       </button>

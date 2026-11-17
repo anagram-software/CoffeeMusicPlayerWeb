@@ -17,7 +17,7 @@ export function SidePanel({ className }: { className?: string }) {
   if (!panel) return null
 
   return (
-    <div className={cn('flex min-h-0 flex-col', className)}>
+    <div className={cn('player-neutral flex min-h-0 flex-col', className)}>
       <div className="flex shrink-0 items-center gap-1 px-2 pt-2">
         <PanelTab id="queue" current={panel} label="Queue" icon={MdQueueMusic} />
         <PanelTab id="lyrics" current={panel} label="Lyrics" icon={MdClosedCaption} />

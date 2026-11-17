@@ -39,7 +39,7 @@ export function PlayPauseButton({ size = 'md', className }: { size?: 'sm' | 'md'
       )}
     >
       <Icon className={size === 'lg' ? 'size-9' : 'size-6'} />
-      {buffering && <span className="absolute inset-0 animate-spin rounded-full border-2 border-transparent border-t-section" />}
+      {buffering && <span className="absolute inset-0 animate-spin rounded-full border-2 border-transparent border-t-background/70" />}
     </button>
   )
 }

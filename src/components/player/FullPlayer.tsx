@@ -87,7 +87,7 @@ export function FullPlayer() {
     <motion.div
       role="dialog"
       aria-label="Now playing"
-      className={cn('fixed inset-0 z-40 flex flex-col text-foreground transition-[background-color] duration-700', theme === 'dark' && 'dark')}
+      className={cn('player-neutral fixed inset-0 z-40 flex flex-col text-foreground transition-[background-color] duration-700', theme === 'dark' && 'dark')}
       style={{ backgroundColor: tint }}
       initial={{ y: '100%' }}
       animate={{ y: 0 }}

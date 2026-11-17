@@ -26,7 +26,7 @@ export function PlayerBar() {
 
   return (
     <footer
-      className="relative border-t border-border bg-card transition-colors duration-700"
+      className="player-neutral relative border-t border-border bg-card transition-colors duration-700"
       style={tint ? { backgroundColor: `color-mix(in oklab, ${tint} ${tintAmount}%, var(--card))` } : undefined}
     >
       {/* Mobile progress line along the top edge */}
@@ -95,7 +95,7 @@ function PanelButton({ label, icon: Icon, active, onClick }: { label: string; ic
       onClick={onClick}
       aria-label={label}
       aria-pressed={active}
-      className={cn('hidden md:inline-flex', active ? 'text-section-ink' : 'text-muted-foreground hover:text-foreground')}
+      className={cn('hidden md:inline-flex', active ? 'bg-foreground/10 text-foreground' : 'text-muted-foreground hover:text-foreground')}
     >
       <Icon className="size-5" />
     </Button>

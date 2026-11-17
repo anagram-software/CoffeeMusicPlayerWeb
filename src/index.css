@@ -164,6 +164,16 @@
 [data-section="search"] { --section-accent: #448aff; --section-accent-foreground: #ffffff; }
 [data-section="edit"] { --section-accent: #1de9b6; --section-accent-foreground: #1a1a1a; }
 
+/*
+ * Player surfaces (bar, full player, side panel) use a neutral accent, not the
+ * page's section colour: focus rings and any "primary" parts follow the text colour.
+ */
+.player-neutral {
+    --ring: var(--foreground);
+    --primary: var(--foreground);
+    --primary-foreground: var(--background);
+}
+
 /* Light mode: accent text in deeper shades (pills and buttons keep the originals). */
 html:not(.dark), html:not(.dark) [data-section] { --section-ink: color-mix(in oklab, var(--section-accent) 80%, black); }
 html:not(.dark)[data-section="playlists"], html:not(.dark) [data-section="playlists"] { --section-ink: #a87600; }
