@@ -14,10 +14,16 @@ COPY . .
 RUN npm run build
 
 # --- Serve ------------------------------------------------------------------
-# Static files only: the app talks to your Navidrome server straight from the browser.
+# Static files: the app talks to your Navidrome server straight from the browser. The
+# one exception is a small proxy for Last.fm playlist import (see docker/nginx.conf).
 # Per-architecture, but it only copies files (no RUN), so it also builds without emulation.
 FROM nginxinc/nginx-unprivileged:alpine
-COPY docker/nginx.conf /etc/nginx/conf.d/default.conf
+# Installed as a template: at startup the image's entrypoint sets NGINX_LOCAL_RESOLVERS
+# from /etc/resolv.conf (NGINX_ENTRYPOINT_LOCAL_RESOLVERS) and writes conf.d/default.conf
+# with it filled in. Only defined environment variables are replaced, so nginx's own
+# $variables are left alone.
+ENV NGINX_ENTRYPOINT_LOCAL_RESOLVERS=1
+COPY docker/nginx.conf /etc/nginx/templates/default.conf.template
 COPY --from=build /app/dist /usr/share/nginx/html
 
 # Runs as a non-root user, so it listens on an unprivileged port.

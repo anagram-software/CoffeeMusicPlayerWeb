@@ -1,44 +1,54 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
-import { fetchLastfmTracks, LastfmError } from './lastfm'
+import { fetchPlaylistTracks, LastfmError, parsePlaylistUrl } from './lastfm'
 
-const respond = (body: unknown) => Promise.resolve(new Response(JSON.stringify(body), { status: 200 }))
-const track = (name: string, artist: string) => ({ name, artist: { name: artist } })
+const json = (body: unknown) => Promise.resolve(new Response(JSON.stringify(body), { status: 200, headers: { 'content-type': 'application/json' } }))
+const track = (name: string, ...artists: string[]) => ({ name, artists: artists.map((a) => ({ name: a })) })
 
 afterEach(() => vi.unstubAllGlobals())
 
-describe('fetchLastfmTracks', () => {
-  it('pages through results, drops duplicates and stops at the limit', async () => {
-    const fetchMock = vi.fn((url: URL) => {
-      const page = url.searchParams.get('page')
-      return respond({
-        lovedtracks: {
-          track: page === '1' ? [track('A', 'X'), track('B', 'X')] : [track('b', 'x'), track('C', 'Y'), track('D', 'Y')],
-          '@attr': { totalPages: '5' },
-        },
-      })
+describe('parsePlaylistUrl', () => {
+  it.each([
+    'https://www.last.fm/user/thatudeshuk/playlists/14630498',
+    'https://last.fm/user/thatudeshuk/playlists/14630498/',
+    'www.last.fm/de/user/thatudeshuk/playlists/14630498',
+    'https://www.last.fm/pt-br/user/thatudeshuk/playlists/14630498?ref=share',
+    '  last.fm/user/thatudeshuk/playlists/14630498  ',
+  ])('reads %s', (url) => expect(parsePlaylistUrl(url)).toEqual({ user: 'thatudeshuk', id: '14630498' }))
+
+  it.each(['https://www.last.fm/user/thatudeshuk', 'https://www.last.fm/music/Radiohead', 'https://example.com/user/x/playlists/1', 'hello'])(
+    'rejects %s',
+    (url) => expect(parsePlaylistUrl(url)).toBeUndefined(),
+  )
+})
+
+describe('fetchPlaylistTracks', () => {
+  it('reads pages through the proxy until an empty one', async () => {
+    const fetchMock = vi.fn((url: string) => {
+      const page = new URL(url, 'http://app').searchParams.get('page')
+      if (page === '1') return json({ playlist: [track('Roses (feat. ROZES)', 'The Chainsmokers'), track('Get Lucky', 'Daft Punk', 'Pharrell Williams')] })
+      if (page === '2') return json({ playlist: [track('High', 'The Chainsmokers'), { name: 'No artist' }] })
+      return json({ playlist: [] })
     })
     vi.stubGlobal('fetch', fetchMock)
 
-    const tracks = await fetchLastfmTracks('key', { kind: 'loved', user: 'rj' }, 3)
-    expect(tracks).toEqual([
-      { artist: 'X', title: 'A' },
-      { artist: 'X', title: 'B' },
-      { artist: 'Y', title: 'C' },
+    expect(await fetchPlaylistTracks({ user: 'rj', id: '42' })).toEqual([
+      { artist: 'The Chainsmokers', title: 'Roses (feat. ROZES)' },
+      { artist: 'Daft Punk, Pharrell Williams', title: 'Get Lucky' },
+      { artist: 'The Chainsmokers', title: 'High' },
     ])
-    const first = fetchMock.mock.calls[0][0]
-    expect(first.searchParams.get('method')).toBe('user.getLovedTracks')
-    expect(first.searchParams.get('api_key')).toBe('key')
+    expect(fetchMock.mock.calls[0][0]).toBe('/lastfm/station/rj/playlists/42?ajax=1&page=1')
+    expect(fetchMock).toHaveBeenCalledTimes(3)
   })
 
-  it('accepts a single track sent as an object', async () => {
-    vi.stubGlobal('fetch', () => respond({ tracks: { track: track('Only', 'Z'), '@attr': { totalPages: '1' } } }))
-    expect(await fetchLastfmTracks('key', { kind: 'tag', tag: 'rare' }, 50)).toEqual([{ artist: 'Z', title: 'Only' }])
+  it('explains a missing or private playlist', async () => {
+    vi.stubGlobal('fetch', () => Promise.resolve(new Response('<html>', { status: 500, headers: { 'content-type': 'text/html' } })))
+    await expect(fetchPlaylistTracks({ user: 'rj', id: '1' })).rejects.toThrow(/public/)
   })
 
-  it('reports an invalid key clearly', async () => {
-    vi.stubGlobal('fetch', () => Promise.resolve(new Response(JSON.stringify({ error: 10, message: 'Invalid API key' }), { status: 403 })))
-    const err = await fetchLastfmTracks('bad', { kind: 'loved', user: 'rj' }, 10).catch((e) => e)
+  it('explains a missing proxy (SPA fallback serves HTML)', async () => {
+    vi.stubGlobal('fetch', () => Promise.resolve(new Response('<!doctype html>', { status: 200, headers: { 'content-type': 'text/html' } })))
+    const err = await fetchPlaylistTracks({ user: 'rj', id: '1' }).catch((e) => e)
     expect(err).toBeInstanceOf(LastfmError)
-    expect(err.message).toMatch(/Settings/)
+    expect(err.message).toMatch(/proxy/)
   })
 })

@@ -5,40 +5,20 @@ import { Button } from '@/components/ui/button'
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { plural } from '@/lib/format'
-import { describeSource, fetchLastfmTracks, lastfmPeriods, type LastfmPeriod, type LastfmSource } from '@/lib/lastfm'
+import { fetchPlaylistTracks, type LastfmPlaylistRef, parsePlaylistUrl } from '@/lib/lastfm'
 import { externalProvider, isExternalId } from '@/lib/subsonic/external'
 import { importPlaylist, matchTracks, type MatchedTrack } from '@/lib/subsonic/importPlaylist'
 import { cn } from '@/lib/utils'
 import { useSubsonic } from '@/stores/session'
-import { useSettingsStore } from '@/stores/settings'
-import { openSettings } from '@/stores/ui'
-
-const sourceKinds = {
-  loved: 'Loved tracks',
-  top: 'Top tracks',
-  tag: 'Top tracks for a tag',
-  artist: 'Top tracks for an artist',
-} as const
-type SourceKind = keyof typeof sourceKinds
-
-const inputLabels: Record<SourceKind, { label: string; placeholder: string }> = {
-  loved: { label: 'Last.fm username', placeholder: 'e.g. rj' },
-  top: { label: 'Last.fm username', placeholder: 'e.g. rj' },
-  tag: { label: 'Tag', placeholder: 'e.g. shoegaze' },
-  artist: { label: 'Artist', placeholder: 'e.g. Radiohead' },
-}
-
-const LIMITS = [25, 50, 100, 200, 500] as const
 
 type Step =
   | { kind: 'form'; error?: string }
   | { kind: 'loading'; message: string }
-  | { kind: 'review'; source: LastfmSource; matches: MatchedTrack[] }
+  | { kind: 'review'; ref: LastfmPlaylistRef; url: string; matches: MatchedTrack[] }
 
 /**
- * Imports a Last.fm track list as a playlist: fetch the list, match each track
+ * Imports a public Last.fm playlist from its link: fetch the tracks, match each
  * against the library (falling back to the streaming provider through
  * Octo-Fiesta), review, then create the playlist in the background.
  */
@@ -57,38 +37,21 @@ export function LastfmImportDialog({ open, onOpenChange }: { open: boolean; onOp
 }
 
 function ImportFlow({ onClose }: { onClose: () => void }) {
-  const apiKey = useSettingsStore((s) => s.lastfmApiKey)
   const client = useSubsonic()
   const navigate = useNavigate()
   const [step, setStep] = useState<Step>({ kind: 'form' })
   const abortRef = useRef<AbortController | null>(null)
   useEffect(() => () => abortRef.current?.abort(), [])
 
-  if (!apiKey) {
-    return (
-      <div className="flex flex-col items-start gap-3">
-        <p className="text-sm text-muted-foreground">Add a Last.fm API key in Settings first. It’s free and only takes a minute.</p>
-        <Button
-          onClick={() => {
-            onClose()
-            openSettings('lastfm')
-          }}
-        >
-          Open Last.fm settings
-        </Button>
-      </div>
-    )
-  }
-
-  const find = async (source: LastfmSource, limit: number) => {
+  const find = async (ref: LastfmPlaylistRef, url: string) => {
     abortRef.current?.abort()
     const controller = new AbortController()
     abortRef.current = controller
     try {
       setStep({ kind: 'loading', message: 'Fetching from Last.fm…' })
-      const tracks = await fetchLastfmTracks(apiKey, source, limit, controller.signal)
+      const tracks = await fetchPlaylistTracks(ref, controller.signal)
       if (tracks.length === 0) {
-        setStep({ kind: 'form', error: 'Last.fm returned no tracks for that.' })
+        setStep({ kind: 'form', error: 'That playlist is empty.' })
         return
       }
       setStep({ kind: 'loading', message: `Finding songs: 0 of ${tracks.length}` })
@@ -98,7 +61,7 @@ function ImportFlow({ onClose }: { onClose: () => void }) {
         (done) => setStep({ kind: 'loading', message: `Finding songs: ${done} of ${tracks.length}` }),
         controller.signal,
       )
-      setStep({ kind: 'review', source, matches })
+      setStep({ kind: 'review', ref, url, matches })
     } catch (e) {
       if (controller.signal.aborted) return
       setStep({ kind: 'form', error: (e as Error).message })
@@ -126,14 +89,14 @@ function ImportFlow({ onClose }: { onClose: () => void }) {
   if (step.kind === 'review') {
     return (
       <Review
-        source={step.source}
+        defaultName={`${step.ref.user}'s Last.fm playlist`}
         matches={step.matches}
         onBack={() => setStep({ kind: 'form' })}
         onImport={(name) => {
           onClose()
           void importPlaylist(client, {
             name,
-            comment: `Imported from Last.fm: ${describeSource(step.source)}`,
+            comment: `Imported from Last.fm: ${step.url}`,
             songs: step.matches.flatMap((m) => (m.song ? [m.song] : [])),
             onOpen: (id) => navigate({ to: '/playlist/$id', params: { id } }),
           })
@@ -142,96 +105,45 @@ function ImportFlow({ onClose }: { onClose: () => void }) {
     )
   }
 
-  return <SourceForm error={step.error} onSubmit={find} />
+  return <UrlForm error={step.error} onSubmit={find} />
 }
 
-function SourceForm({ error, onSubmit }: { error?: string; onSubmit: (source: LastfmSource, limit: number) => void }) {
-  const [kind, setKind] = useState<SourceKind>('loved')
-  const [value, setValue] = useState('')
-  const [period, setPeriod] = useState<LastfmPeriod>('overall')
-  const [limit, setLimit] = useState<number>(50)
-
-  const toSource = (v: string): LastfmSource => {
-    switch (kind) {
-      case 'loved':
-        return { kind, user: v }
-      case 'top':
-        return { kind, user: v, period }
-      case 'tag':
-        return { kind, tag: v }
-      case 'artist':
-        return { kind, artist: v }
-    }
-  }
+function UrlForm({ error, onSubmit }: { error?: string; onSubmit: (ref: LastfmPlaylistRef, url: string) => void }) {
+  const [url, setUrl] = useState('')
+  const [touched, setTouched] = useState(false)
+  const ref = parsePlaylistUrl(url)
+  const invalid = touched && url.trim() !== '' && !ref
 
   return (
     <form
       className="flex flex-col gap-4"
       onSubmit={(e) => {
         e.preventDefault()
-        if (value.trim()) onSubmit(toSource(value.trim()), limit)
+        setTouched(true)
+        if (ref) onSubmit(ref, `https://www.last.fm/user/${ref.user}/playlists/${ref.id}`)
       }}
     >
       <div className="grid gap-1.5">
-        <Label>List</Label>
-        <Select value={kind} onValueChange={(v) => setKind(v as SourceKind)}>
-          <SelectTrigger className="w-full" aria-label="List">
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            {Object.entries(sourceKinds).map(([k, label]) => (
-              <SelectItem key={k} value={k}>
-                {label}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+        <Label htmlFor="lastfm-url">Playlist link</Label>
+        <Input
+          id="lastfm-url"
+          autoFocus
+          value={url}
+          onChange={(e) => setUrl(e.target.value)}
+          onBlur={() => setTouched(true)}
+          placeholder="https://www.last.fm/user/…/playlists/…"
+          aria-invalid={invalid}
+          autoComplete="off"
+          spellCheck={false}
+        />
+        <p className="text-xs text-muted-foreground">The playlist must be public. Copy the link from the playlist’s page on last.fm.</p>
       </div>
 
-      <div className="grid gap-1.5">
-        <Label htmlFor="lastfm-source">{inputLabels[kind].label}</Label>
-        <Input id="lastfm-source" autoFocus value={value} onChange={(e) => setValue(e.target.value)} placeholder={inputLabels[kind].placeholder} />
-      </div>
-
-      <div className="flex gap-3">
-        {kind === 'top' && (
-          <div className="grid flex-1 gap-1.5">
-            <Label>Period</Label>
-            <Select value={period} onValueChange={(v) => setPeriod(v as LastfmPeriod)}>
-              <SelectTrigger className="w-full" aria-label="Period">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {Object.entries(lastfmPeriods).map(([p, label]) => (
-                  <SelectItem key={p} value={p}>
-                    {label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-        )}
-        <div className="grid flex-1 gap-1.5">
-          <Label>Songs</Label>
-          <Select value={String(limit)} onValueChange={(v) => setLimit(Number(v))}>
-            <SelectTrigger className="w-full" aria-label="Number of songs">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              {LIMITS.map((n) => (
-                <SelectItem key={n} value={String(n)}>
-                  Up to {n}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-      </div>
-
+      {invalid && <p className="text-sm text-destructive">That doesn’t look like a Last.fm playlist link.</p>}
       {error && <p className="text-sm text-destructive">{error}</p>}
 
       <DialogFooter>
-        <Button type="submit" disabled={!value.trim()}>
+        <Button type="submit" disabled={!ref}>
           Find songs
         </Button>
       </DialogFooter>
@@ -240,17 +152,17 @@ function SourceForm({ error, onSubmit }: { error?: string; onSubmit: (source: La
 }
 
 function Review({
-  source,
+  defaultName,
   matches,
   onBack,
   onImport,
 }: {
-  source: LastfmSource
+  defaultName: string
   matches: MatchedTrack[]
   onBack: () => void
   onImport: (name: string) => void
 }) {
-  const [name, setName] = useState(() => describeSource(source))
+  const [name, setName] = useState(defaultName)
   const library = matches.filter((m) => m.song && !isExternalId(m.song.id)).length
   const external = matches.filter((m) => m.song && isExternalId(m.song.id)).length
   const missing = matches.length - library - external

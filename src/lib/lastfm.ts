@@ -1,30 +1,22 @@
 /*
- * Minimal Last.fm API client for importing track lists. The API allows
- * cross-origin requests and only needs an API key (no user login) for public
- * data. It has no playlist method (Last.fm dropped playlist.* from the API), so
- * the import offers the lists it does have: a user's loved and top tracks, and
- * the top tracks of a tag or artist.
+ * Reads public Last.fm playlists. The Last.fm API has no playlist method, and
+ * the playlist web pages sit behind a bot check, but the site's own web player
+ * loads a playlist's tracks as JSON from
+ *   /player/station/user/<user>/playlists/<id>?ajax=1&page=<n>   (50 tracks a page)
+ * That endpoint sends no CORS headers, so the app calls it through a same-origin
+ * proxy at /lastfm/station/… (docker/nginx.conf in production, vite.config.ts in
+ * development). It's undocumented and may change without notice.
  */
 
-const API_URL = 'https://ws.audioscrobbler.com/2.0/'
-/** Page size for paginated calls (the API's maximum varies by method; 200 works for all of these). */
-const PAGE_SIZE = 200
+/** Same-origin proxy path standing in for https://www.last.fm/player/station/user/ */
+const PROXY_PATH = '/lastfm/station'
+/** Safety stop: 50 tracks a page, so 2,000 tracks. */
+const MAX_PAGES = 40
 
-export const lastfmPeriods = {
-  overall: 'All time',
-  '7day': 'Last 7 days',
-  '1month': 'Last month',
-  '3month': 'Last 3 months',
-  '6month': 'Last 6 months',
-  '12month': 'Last year',
-} as const
-export type LastfmPeriod = keyof typeof lastfmPeriods
-
-export type LastfmSource =
-  | { kind: 'loved'; user: string }
-  | { kind: 'top'; user: string; period: LastfmPeriod }
-  | { kind: 'tag'; tag: string }
-  | { kind: 'artist'; artist: string }
+export interface LastfmPlaylistRef {
+  user: string
+  id: string
+}
 
 export interface LastfmTrack {
   artist: string
@@ -32,103 +24,64 @@ export interface LastfmTrack {
 }
 
 export class LastfmError extends Error {
-  readonly code: number
-  constructor(code: number, message: string) {
+  constructor(message: string) {
     super(message)
     this.name = 'LastfmError'
-    this.code = code
   }
 }
 
-/** Default playlist name for a source, e.g. "rj's loved tracks". */
-export function describeSource(source: LastfmSource): string {
-  switch (source.kind) {
-    case 'loved':
-      return `${source.user}'s loved tracks`
-    case 'top':
-      return source.period === 'overall' ? `${source.user}'s top tracks` : `${source.user}'s top tracks (${lastfmPeriods[source.period].toLowerCase()})`
-    case 'tag':
-      return `Top ${source.tag} tracks`
-    case 'artist':
-      return `${source.artist}: top tracks`
-  }
-}
-
-/** Method, parameters and the response's root key for each source. */
-function request(source: LastfmSource): { method: string; params: Record<string, string>; root: string } {
-  switch (source.kind) {
-    case 'loved':
-      return { method: 'user.getLovedTracks', params: { user: source.user }, root: 'lovedtracks' }
-    case 'top':
-      return { method: 'user.getTopTracks', params: { user: source.user, period: source.period }, root: 'toptracks' }
-    case 'tag':
-      return { method: 'tag.getTopTracks', params: { tag: source.tag }, root: 'tracks' }
-    case 'artist':
-      return { method: 'artist.getTopTracks', params: { artist: source.artist, autocorrect: '1' }, root: 'toptracks' }
-  }
+/**
+ * "https://www.last.fm/user/rj/playlists/123" → { user: "rj", id: "123" }.
+ * Also accepts localised links (last.fm/de/user/…), no scheme, and trailing
+ * slashes or query strings. Undefined if it isn't a playlist link.
+ */
+export function parsePlaylistUrl(input: string): LastfmPlaylistRef | undefined {
+  const m = input.trim().match(/^(?:https?:\/\/)?(?:www\.)?last\.fm\/(?:[a-z]{2}(?:-[a-z]{2})?\/)?user\/([A-Za-z0-9_-]+)\/playlists\/(\d+)\/?(?:[?#].*)?$/i)
+  return m ? { user: m[1], id: m[2] } : undefined
 }
 
 interface RawTrack {
   name?: string
-  artist?: { name?: string; '#text'?: string } | string
+  artists?: { name?: string }[]
 }
 
-interface RawList {
-  track?: RawTrack | RawTrack[]
-  '@attr'?: { totalPages?: string }
+function toTrack(raw: RawTrack): LastfmTrack | undefined {
+  const title = raw.name?.trim()
+  const artist = (raw.artists ?? [])
+    .map((a) => a.name?.trim())
+    .filter(Boolean)
+    .join(', ')
+  return title && artist ? { artist, title } : undefined
 }
 
-async function call(apiKey: string, method: string, params: Record<string, string>, signal?: AbortSignal) {
-  const url = new URL(API_URL)
-  url.search = new URLSearchParams({ ...params, method, api_key: apiKey, format: 'json' }).toString()
+async function fetchPage(ref: LastfmPlaylistRef, page: number, signal?: AbortSignal): Promise<RawTrack[]> {
+  const url = `${PROXY_PATH}/${encodeURIComponent(ref.user)}/playlists/${ref.id}?ajax=1&page=${page}`
   let res: Response
   try {
     res = await fetch(url, { signal })
   } catch (e) {
     if (e instanceof DOMException && e.name === 'AbortError') throw e
-    throw new LastfmError(0, 'Could not reach Last.fm.')
+    throw new LastfmError('Could not reach Last.fm.')
   }
-  const json = (await res.json().catch(() => null)) as ({ error?: number; message?: string } & Record<string, unknown>) | null
-  if (json?.error) {
-    const invalidKey = json.error === 10 || json.error === 26
-    throw new LastfmError(json.error, invalidKey ? 'Last.fm rejected the API key. Check it in Settings.' : (json.message ?? 'Last.fm request failed'))
-  }
-  if (!res.ok || !json) throw new LastfmError(res.status, `Last.fm responded with HTTP ${res.status}`)
-  return json
+  // Last.fm answers an unknown or private playlist with an HTML error page (HTTP 500).
+  if (!res.ok) throw new LastfmError("Couldn't load that playlist. Check the link and that the playlist is public.")
+  // Without the proxy, the SPA fallback serves index.html here instead.
+  if (!res.headers.get('content-type')?.includes('json')) throw new LastfmError("Last.fm import isn't available on this server (the /lastfm proxy is missing).")
+  const json = (await res.json().catch(() => null)) as { playlist?: RawTrack[] } | null
+  if (!json || !Array.isArray(json.playlist)) throw new LastfmError('Last.fm sent something unexpected for that playlist.')
+  return json.playlist
 }
 
-function toTrack(raw: RawTrack): LastfmTrack | undefined {
-  const artist = typeof raw.artist === 'string' ? raw.artist : (raw.artist?.name ?? raw.artist?.['#text'])
-  const title = raw.name?.trim()
-  return artist?.trim() && title ? { artist: artist.trim(), title } : undefined
-}
-
-/** Fetches up to `limit` tracks from a source, in Last.fm's order, without duplicates. */
-export async function fetchLastfmTracks(apiKey: string, source: LastfmSource, limit: number, signal?: AbortSignal): Promise<LastfmTrack[]> {
-  const { method, params, root } = request(source)
+/** All tracks of a public playlist, in order. */
+export async function fetchPlaylistTracks(ref: LastfmPlaylistRef, signal?: AbortSignal): Promise<LastfmTrack[]> {
   const tracks: LastfmTrack[] = []
-  const seen = new Set<string>()
-  const pageSize = Math.min(limit, PAGE_SIZE)
-
-  for (let page = 1; tracks.length < limit; page++) {
-    const json = await call(apiKey, method, { ...params, limit: String(pageSize), page: String(page) }, signal)
-    const list = json[root] as RawList | undefined
-    // A single result comes back as an object rather than an array.
-    const raw = list?.track ? ([] as RawTrack[]).concat(list.track) : []
+  for (let page = 1; page <= MAX_PAGES; page++) {
+    const raw = await fetchPage(ref, page, signal)
+    if (raw.length === 0) break
     for (const t of raw) {
       const track = toTrack(t)
-      const key = track && `${track.artist}\u0000${track.title}`.toLowerCase()
-      if (!track || !key || seen.has(key)) continue
-      seen.add(key)
-      tracks.push(track)
+      if (track) tracks.push(track)
     }
-    const totalPages = Number(list?.['@attr']?.totalPages ?? 1)
-    if (raw.length === 0 || page >= totalPages) break
   }
-  return tracks.slice(0, limit)
-}
-
-/** Throws a LastfmError if Last.fm rejects the key (one cheap request). */
-export async function checkLastfmKey(apiKey: string, signal?: AbortSignal): Promise<void> {
-  await call(apiKey, 'chart.getTopArtists', { limit: '1' }, signal)
+  return tracks
 }
