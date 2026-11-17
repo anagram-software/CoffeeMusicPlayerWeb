@@ -1,11 +1,15 @@
 import { useQuery } from '@tanstack/react-query'
 import { createFileRoute } from '@tanstack/react-router'
 import { useState } from 'react'
+import type { AlbumID3 } from 'subsonic-api'
 import { AlbumCard, ArtistCard } from '@/components/library/AlbumCard'
 import { DetailHeader } from '@/components/library/DetailHeader'
 import { SongRow } from '@/components/library/SongRow'
 import { ErrorState, ListSkeleton, SectionTitle } from '@/components/library/states'
 import { plural, stripHtml } from '@/lib/format'
+import { isExternalId } from '@/lib/subsonic/external'
+import { looksLikeCover, mergeEditions, releaseKind } from '@/lib/subsonic/relevance'
+import { useSettingsStore } from '@/stores/settings'
 import { artistInfoQuery, artistQuery, topSongsQuery } from '@/lib/subsonic/queries'
 import { player } from '@/player/engine'
 import { toTrack } from '@/player/queue'
@@ -26,6 +30,8 @@ function ArtistPage() {
   const query = useQuery(artistQuery(client, id))
   const info = useQuery(artistInfoQuery(client, id))
   const top = useQuery({ ...topSongsQuery(client, id, query.data?.name ?? ''), enabled: !!query.data })
+  const hideCovers = useSettingsStore((s) => s.hideCovers)
+  const [showAppearsOn, setShowAppearsOn] = useState(false)
 
   if (query.isPending) return <ListSkeleton />
   if (query.isError) return <ErrorState error={query.error} onRetry={() => query.refetch()} />
@@ -33,6 +39,7 @@ function ArtistPage() {
   const artist = query.data
   const albums = [...(artist.album ?? [])].sort((a, b) => (b.year ?? 0) - (a.year ?? 0))
   const songCount = albums.reduce((n, a) => n + a.songCount, 0)
+  const releases = groupReleases(albums, artist.name, isExternalId(artist.id) && hideCovers)
   const similar = info.data?.similarArtist ?? []
 
   return (
@@ -62,14 +69,33 @@ function ArtistPage() {
           </section>
         )}
 
-        <section>
-          <SectionTitle>Albums</SectionTitle>
-          <div className={gridClass}>
-            {albums.map((a) => (
-              <AlbumCard key={a.id} album={a} />
-            ))}
-          </div>
-        </section>
+        {releases.albums.length > 0 && <ReleaseSection title="Albums" albums={releases.albums} />}
+        {releases.singles.length > 0 && <ReleaseSection title="Singles & EPs" albums={releases.singles} />}
+        {releases.appearsOn.length > 0 && (
+          <section>
+            <SectionTitle
+              action={
+                <button type="button" onClick={() => setShowAppearsOn((v) => !v)} className="text-xs text-muted-foreground hover:text-foreground">
+                  {showAppearsOn ? 'Hide' : `Show ${releases.appearsOn.length}`}
+                </button>
+              }
+            >
+              Appears on
+            </SectionTitle>
+            {showAppearsOn && (
+              <div className={gridClass}>
+                {releases.appearsOn.map((a) => (
+                  <AlbumCard key={a.id} album={a} />
+                ))}
+              </div>
+            )}
+          </section>
+        )}
+        {releases.hidden > 0 && (
+          <p className="-mt-6 text-xs text-muted-foreground">
+            {plural(releases.hidden, 'cover or karaoke release')} hidden (Search → “Hide covers & karaoke”).
+          </p>
+        )}
 
         {similar.length > 0 && (
           <section>
@@ -84,6 +110,45 @@ function ArtistPage() {
       </div>
     </div>
   )
+}
+
+function ReleaseSection({ title, albums }: { title: string; albums: AlbumID3[] }) {
+  return (
+    <section>
+      <SectionTitle>{title}</SectionTitle>
+      <div className={gridClass}>
+        {albums.map((a) => (
+          <AlbumCard key={a.id} album={a} />
+        ))}
+      </div>
+    </section>
+  )
+}
+
+/**
+ * Albums / Singles & EPs / Appears on. For streaming-provider artists, also
+ * drops cover/karaoke filler and merges duplicate editions (Deluxe,
+ * Remastered…). If nothing is credited to the artist directly, everything is
+ * shown as albums rather than hidden under "Appears on".
+ */
+function groupReleases(albums: AlbumID3[], artistName: string, filterExternal: boolean) {
+  let list = albums
+  let hidden = 0
+  if (filterExternal) {
+    const kept = list.filter((a) => !looksLikeCover(a.name, a.artist))
+    hidden = list.length - kept.length
+    list = mergeEditions(kept)
+  }
+  const groups = { albums: [] as AlbumID3[], singles: [] as AlbumID3[], appearsOn: [] as AlbumID3[], hidden }
+  for (const a of list) {
+    const kind = releaseKind(a, artistName)
+    groups[kind === 'album' ? 'albums' : kind === 'single' ? 'singles' : 'appearsOn'].push(a)
+  }
+  if (groups.albums.length === 0 && groups.singles.length === 0) {
+    groups.albums = groups.appearsOn
+    groups.appearsOn = []
+  }
+  return groups
 }
 
 function Biography({ html, lastFmUrl }: { html: string; lastFmUrl?: string }) {

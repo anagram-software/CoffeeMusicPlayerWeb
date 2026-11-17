@@ -14,6 +14,10 @@ interface SettingsState {
   theme: Theme
   /** Show the file format/quality line under the artwork in the full player. */
   showQuality: boolean
+  /** Search: which results to show (library, streaming provider, or both). */
+  searchSource: 'all' | 'library' | 'external'
+  /** Hide karaoke/tribute/cover filler from streaming-provider results. */
+  hideCovers: boolean
   streamFormat: StreamFormat
   maxBitRate: (typeof maxBitRates)[number]
   /** Report plays to the server (play counts, Last.fm/ListenBrainz via Navidrome). */
@@ -28,12 +32,23 @@ export const useSettingsStore = create<SettingsState>()(
     (set) => ({
       theme: 'system',
       showQuality: true,
+      searchSource: 'all',
+      hideCovers: true,
       streamFormat: 'raw',
       maxBitRate: 0,
       scrobble: true,
       lrclib: false,
       set: (partial) => set(partial),
     }),
-    { name: 'coffee.settings', partialize: ({ theme, showQuality, streamFormat, maxBitRate, scrobble, lrclib }) => ({ theme, showQuality, streamFormat, maxBitRate, scrobble, lrclib }) },
+    { name: 'coffee.settings', partialize: ({ theme, showQuality, searchSource, hideCovers, streamFormat, maxBitRate, scrobble, lrclib }) => ({
+        theme,
+        showQuality,
+        searchSource,
+        hideCovers,
+        streamFormat,
+        maxBitRate,
+        scrobble,
+        lrclib,
+      }) },
   ),
 )

@@ -1,7 +1,7 @@
 import { keepPreviousData, useQuery } from '@tanstack/react-query'
 import { createFileRoute, useNavigate } from '@tanstack/react-router'
 import { type ReactNode, useEffect, useState } from 'react'
-import { MdClose, MdSearch, MdSearchOff } from 'react-icons/md'
+import { MdCheck, MdClose, MdSearch, MdSearchOff } from 'react-icons/md'
 import { z } from 'zod'
 import { TabStrip } from '@/components/layout/TabStrip'
 import { TopBarSlot } from '@/components/layout/TopBarSlot'
@@ -10,11 +10,13 @@ import { SongRow } from '@/components/library/SongRow'
 import { EmptyState, ErrorState, GridSkeleton, ListSkeleton, SectionTitle } from '@/components/library/states'
 import { useDebouncedValue } from '@/hooks/useDebouncedValue'
 import { externalProvider, isExternalId } from '@/lib/subsonic/external'
+import { looksLikeCover } from '@/lib/subsonic/relevance'
 import { searchAlbumsQuery, searchArtistsQuery, searchSongsQuery } from '@/lib/subsonic/queries'
 import { cn } from '@/lib/utils'
 import { player } from '@/player/engine'
 import { toTrack } from '@/player/queue'
 import { useSubsonic } from '@/stores/session'
+import { useSettingsStore } from '@/stores/settings'
 
 export const Route = createFileRoute('/_app/search')({
   staticData: { section: 'search' },
@@ -102,6 +104,7 @@ function SongResults({ query }: { query: string }) {
       items={q.data}
       query={query}
       dimmed={q.isPlaceholderData}
+      texts={(s) => [s.title, s.album, s.artist]}
       render={(songs) => (
         <div className="-mx-2">
           {songs.map((s) => (
@@ -124,6 +127,7 @@ function AlbumResults({ query }: { query: string }) {
       items={q.data}
       query={query}
       dimmed={q.isPlaceholderData}
+      texts={(a) => [a.name, a.artist]}
       render={(albums) => (
         <div className={gridClass}>
           {albums.map((a) => (
@@ -144,6 +148,7 @@ function ArtistResults({ query }: { query: string }) {
       items={q.data}
       query={query}
       dimmed={q.isPlaceholderData}
+      texts={(a) => [a.name]}
       render={(artists) => (
         <div className={gridClass}>
           {artists.map((a) => (
@@ -157,45 +162,98 @@ function ArtistResults({ query }: { query: string }) {
 
 /**
  * Splits results into "In your library" and streaming-provider results
- * (Octo-Fiesta), so it's clear what's already on the server.
+ * (Octo-Fiesta), with filters: which source to show, and hiding the
+ * karaoke/tribute/cover filler providers pad searches with (provider results
+ * only; your library is never filtered).
  */
 function BySource<T extends { id: string }>({
   items,
   query,
   dimmed,
   render,
+  texts,
 }: {
   items: T[]
   query: string
   dimmed: boolean
   render: (items: T[]) => ReactNode
+  /** Title/album/artist of an item, for spotting covers. */
+  texts: (item: T) => (string | undefined)[]
 }) {
+  const { searchSource, hideCovers, set } = useSettingsStore()
   if (items.length === 0) return <EmptyState icon={MdSearchOff} message={`Nothing found for “${query}”`} />
 
   const library = items.filter((i) => !isExternalId(i.id))
-  const external = items.filter((i) => isExternalId(i.id))
-  const provider = externalProvider(external[0]?.id)
+  const allExternal = items.filter((i) => isExternalId(i.id))
+  const external = hideCovers ? allExternal.filter((i) => !looksLikeCover(...texts(i))) : allExternal
+  const hidden = allExternal.length - external.length
+  const provider = externalProvider(allExternal[0]?.id)
+
+  if (allExternal.length === 0) return <div className={cn('transition-opacity', dimmed && 'opacity-60')}>{render(library)}</div>
+
+  const showLibrary = searchSource !== 'external' && library.length > 0
+  const showExternal = searchSource !== 'library'
 
   return (
-    <div className={cn('flex flex-col gap-10 transition-opacity', dimmed && 'opacity-60')}>
-      {external.length === 0 ? (
-        render(library)
-      ) : (
-        <>
-          {library.length > 0 && (
-            <section>
-              <SectionTitle>In your library</SectionTitle>
-              {render(library)}
-            </section>
+    <div className={cn('flex flex-col gap-8 transition-opacity', dimmed && 'opacity-60')}>
+      {/* Filters */}
+      <div className="flex flex-wrap items-center gap-2">
+        {(
+          [
+            ['all', 'All'],
+            ['library', 'Library'],
+            ['external', provider ?? 'Streaming'],
+          ] as const
+        ).map(([value, label]) => (
+          <Chip key={value} active={searchSource === value} onClick={() => set({ searchSource: value })}>
+            {label}
+          </Chip>
+        ))}
+        {showExternal && (
+          <Chip active={hideCovers} onClick={() => set({ hideCovers: !hideCovers })} title="Karaoke, tributes, “made famous by” covers, lullaby and 8-bit versions…">
+            {hideCovers ? <MdCheck className="size-3.5" /> : null} Hide covers & karaoke{hideCovers && hidden > 0 ? ` (${hidden})` : ''}
+          </Chip>
+        )}
+      </div>
+
+      {showLibrary && (
+        <section>
+          <SectionTitle>In your library</SectionTitle>
+          {render(library)}
+        </section>
+      )}
+      {showExternal && (
+        <section>
+          <SectionTitle action={<span className="text-xs text-muted-foreground">Downloaded to your server when played</span>}>
+            From {provider}
+          </SectionTitle>
+          {external.length > 0 ? (
+            render(external)
+          ) : (
+            <p className="py-6 text-sm text-muted-foreground">Only covers and karaoke versions found ({hidden} hidden).</p>
           )}
-          <section>
-            <SectionTitle action={<span className="text-xs text-muted-foreground">Downloaded to your server when played</span>}>
-              From {provider}
-            </SectionTitle>
-            {render(external)}
-          </section>
-        </>
+        </section>
+      )}
+      {searchSource === 'library' && library.length === 0 && (
+        <p className="py-6 text-sm text-muted-foreground">Nothing in your library for “{query}”.</p>
       )}
     </div>
+  )
+}
+
+function Chip({ active, onClick, title, children }: { active: boolean; onClick: () => void; title?: string; children: ReactNode }) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      aria-pressed={active}
+      title={title}
+      className={cn(
+        'inline-flex h-7 items-center gap-1 rounded-full border px-3 text-xs font-medium transition-colors',
+        active ? 'border-transparent bg-foreground text-background' : 'border-border text-muted-foreground hover:text-foreground',
+      )}
+    >
+      {children}
+    </button>
   )
 }
