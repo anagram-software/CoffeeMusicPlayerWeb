@@ -4,6 +4,7 @@ import { useEffect } from 'react'
 import { MdKeyboardArrowDown, MdLyrics, MdQueueMusic } from 'react-icons/md'
 import { CoverArt } from '@/components/CoverArt'
 import { TrackMenu } from '@/components/library/TrackMenu'
+import { Marquee } from '@/components/Marquee'
 import { StarButton } from '@/components/StarButton'
 import { useMediaQuery } from '@/hooks/useMediaQuery'
 import { Button } from '@/components/ui/button'
@@ -131,7 +132,9 @@ export function FullPlayer() {
             <div className="flex items-center gap-2">
               <StarButton kind="song" id={track.id} starred={track.starred} />
               <div className="min-w-0 flex-1 text-center">
-                <h2 className="truncate text-2xl font-light md:text-3xl">{track.title}</h2>
+                <Marquee as="h2" title={track.title} className="text-2xl font-light md:text-3xl">
+                  {track.title}
+                </Marquee>
                 <p className="mt-1 truncate text-sm text-white/70">
                   <TrackLink to="artist" id={track.artistId} label={track.artist} />
                   {track.album && ' • '}

@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react'
 import { CoverArt } from '@/components/CoverArt'
+import { Marquee } from '@/components/Marquee'
 import { useSubsonic } from '@/stores/session'
 
 interface DetailHeaderProps {
@@ -40,9 +41,11 @@ export function DetailHeader({ coverArt, fallback, kind, title, subtitle, tags =
           fallback={fallback}
           className="size-44 shrink-0 rounded-lg shadow-2xl shadow-black/50 md:size-52"
         />
-        <div className="flex min-w-0 flex-col items-center gap-2 text-center sm:items-start sm:text-left">
+        <div className="flex w-full min-w-0 flex-col items-center gap-2 text-center sm:items-start sm:text-left">
           <span className="text-xs font-medium tracking-wider text-white/60 uppercase">{kind}</span>
-          <h1 className="text-3xl font-light text-white md:text-5xl md:leading-tight">{title}</h1>
+          <Marquee as="h1" title={title} className="text-3xl font-light text-white md:text-5xl md:leading-tight">
+            {title}
+          </Marquee>
           {subtitle && <div className="font-bold text-white">{subtitle}</div>}
           {tags.some(Boolean) && (
             <div className="flex flex-wrap justify-center gap-1.5 sm:justify-start">
