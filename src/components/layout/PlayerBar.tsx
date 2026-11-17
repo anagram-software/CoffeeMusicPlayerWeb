@@ -1,10 +1,12 @@
-import { MdExpandLess, MdQueueMusic } from 'react-icons/md'
+import { MdExpandLess, MdLyrics, MdQueueMusic } from 'react-icons/md'
 import { CoverArt } from '@/components/CoverArt'
 import { StarButton } from '@/components/StarButton'
+import { togglePanel } from '@/components/player/sidePanelState'
 import { NextButton, PlayPauseButton, PreviousButton, RepeatButton, SeekBar, ShuffleButton, VolumeControl } from '@/components/player/controls'
 import { Button } from '@/components/ui/button'
 import { useResolvedTheme } from '@/hooks/useTheme'
 import { useArtColor } from '@/lib/artColor'
+import { cn } from '@/lib/utils'
 import { useCurrentTrack, usePlayerStore } from '@/player/store'
 
 /**
@@ -19,7 +21,8 @@ export function PlayerBar() {
   const tint = useArtColor(track?.coverArt, theme)
   const tintAmount = theme === 'dark' ? 55 : 90
   const progress = usePlayerStore((s) => (s.duration ? (s.currentTime / s.duration) * 100 : 0))
-  const openFull = (queue = false) => usePlayerStore.setState({ fullPlayerOpen: true, ...(queue && { panel: 'queue' as const }) })
+  const panel = usePlayerStore((s) => s.panel)
+  const openFull = () => usePlayerStore.setState({ fullPlayerOpen: true })
 
   return (
     <footer
@@ -71,23 +74,30 @@ export function PlayerBar() {
           <SeekBar compact className="w-full" />
         </div>
 
-        {/* Mobile: play + next. Desktop: volume + queue */}
-        <div className="flex items-center justify-end gap-1">
+        {/* Mobile: play + next. Larger screens: volume + lyrics/queue panel toggles (on mobile those live in the full player). */}
+        <div className="flex shrink-0 items-center justify-end gap-0.5 md:gap-1">
           <PlayPauseButton size="sm" className="md:hidden" />
           <NextButton className="md:hidden" />
-          <VolumeControl className="hidden lg:flex" />
-          <Button
-            variant="ghost"
-            size="icon-lg"
-            className="hidden md:inline-flex"
-            disabled={!track}
-            onClick={() => openFull(true)}
-            aria-label="Queue"
-          >
-            <MdQueueMusic className="size-5" />
-          </Button>
+          <VolumeControl className="mr-1 hidden lg:flex" />
+          <PanelButton label="Lyrics" icon={MdLyrics} active={panel === 'lyrics'} onClick={() => togglePanel('lyrics')} />
+          <PanelButton label="Queue" icon={MdQueueMusic} active={panel === 'queue'} onClick={() => togglePanel('queue')} />
         </div>
       </div>
     </footer>
+  )
+}
+
+function PanelButton({ label, icon: Icon, active, onClick }: { label: string; icon: typeof MdLyrics; active: boolean; onClick: () => void }) {
+  return (
+    <Button
+      variant="ghost"
+      size="icon-lg"
+      onClick={onClick}
+      aria-label={label}
+      aria-pressed={active}
+      className={cn('hidden md:inline-flex', active ? 'text-section-ink' : 'text-muted-foreground hover:text-foreground')}
+    >
+      <Icon className="size-5" />
+    </Button>
   )
 }

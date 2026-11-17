@@ -2,6 +2,11 @@ import { Navigate, Outlet } from '@tanstack/react-router'
 import { AnimatePresence } from 'motion/react'
 import { useEffect, useState } from 'react'
 import { FullPlayer } from '@/components/player/FullPlayer'
+import { SidePanel } from '@/components/player/SidePanel'
+import { SIDE_PANEL_WIDTH } from '@/components/player/sidePanelState'
+import { Sheet, SheetContent, SheetTitle } from '@/components/ui/sheet'
+import { useMediaQuery } from '@/hooks/useMediaQuery'
+import { cn } from '@/lib/utils'
 import { SettingsDialog } from '@/components/settings/SettingsDialog'
 import { usePlayerShortcuts } from '@/hooks/usePlayerShortcuts'
 import { useCurrentSection } from '@/hooks/useCurrentSection'
@@ -22,6 +27,11 @@ export function AppShell() {
   const [scrollEl, setScrollEl] = useState<HTMLElement | null>(null)
   const [slotEl, setSlotEl] = useState<HTMLElement | null>(null)
   const fullPlayerOpen = usePlayerStore((s) => s.fullPlayerOpen)
+  const panelOpen = usePlayerStore((s) => !!s.panel)
+  // Queue/lyrics panel: a docked column on wide screens, a slide-over sheet below that.
+  const wide = useMediaQuery('(min-width: 1024px)')
+  const mobile = !useMediaQuery('(min-width: 768px)')
+  const docked = wide && panelOpen
 
   // The engine needs the session for stream URLs, so it starts here, not at app load.
   useEffect(() => {
@@ -40,7 +50,13 @@ export function AppShell() {
   if (!hasSession) return <Navigate to="/login" />
 
   return (
-    <div className="grid h-dvh grid-cols-[minmax(0,1fr)] grid-rows-[1fr_auto] md:grid-cols-[15rem_minmax(0,1fr)]">
+    <div
+      className={cn(
+        'grid h-dvh grid-cols-[minmax(0,1fr)] grid-rows-[1fr_auto] md:grid-cols-[15rem_minmax(0,1fr)]',
+        docked && 'md:grid-cols-[15rem_minmax(0,1fr)_var(--side-panel-width)]',
+      )}
+      style={{ '--side-panel-width': SIDE_PANEL_WIDTH } as React.CSSProperties}
+    >
       {/* Columns are minmax(0, …): an "auto"/"1fr" track grows to fit its widest
           unbreakable content (a long title), stretching the whole app past the screen. */}
       <aside className="hidden min-h-0 border-r border-sidebar-border bg-sidebar md:block">
@@ -60,9 +76,19 @@ export function AppShell() {
         </ScrollElementContext>
       </div>
 
-      <div className="md:col-span-2">
+      {docked && <SidePanel className="min-h-0 border-l border-sidebar-border bg-sidebar" />}
+
+      <div className="col-span-full">
         <PlayerBar />
       </div>
+
+      {/* Tablet widths: the same panel as a slide-over sheet. Mobile shows it inside the full player instead. */}
+      <Sheet open={panelOpen && !wide && !mobile} onOpenChange={(open) => !open && usePlayerStore.setState({ panel: null })}>
+        <SheetContent side="right" showCloseButton={false} className="w-[min(24rem,100vw)] gap-0 bg-sidebar p-0 sm:max-w-none">
+          <SheetTitle className="sr-only">Queue and lyrics</SheetTitle>
+          <SidePanel className="h-full" />
+        </SheetContent>
+      </Sheet>
 
       <AnimatePresence>{fullPlayerOpen && <FullPlayer />}</AnimatePresence>
       <SettingsDialog />

@@ -50,7 +50,6 @@ export function QueueList({ className }: { className?: string }) {
     <div className={cn('flex min-h-0 flex-col', className)}>
       <div className="flex items-center justify-between px-4 py-3">
         <div>
-          <h2 className="text-sm font-medium tracking-wider text-foreground uppercase">Queue</h2>
           <p className="text-xs text-foreground/60">
             {plural(queue.length, 'song')} · {formatDuration(remaining)} left
           </p>
