@@ -1,4 +1,3 @@
-import { Link } from '@tanstack/react-router'
 import { useEffect, useRef } from 'react'
 import { MdLyrics } from 'react-icons/md'
 import { useLyrics } from '@/hooks/useLyrics'
@@ -8,6 +7,7 @@ import { player } from '@/player/engine'
 import type { Track } from '@/player/queue'
 import { usePlayerStore } from '@/player/store'
 import { useSettingsStore } from '@/stores/settings'
+import { openSettings } from '@/stores/ui'
 
 /**
  * Lyrics panel for the full player (the Android app showed lyrics over the
@@ -31,9 +31,9 @@ export function LyricsView({ track, className }: { track: Track; className?: str
           {!lrclibEnabled && (
             <p className="mt-2 text-xs text-white/50">
               You can look up missing lyrics online in{' '}
-              <Link to="/settings" onClick={() => usePlayerStore.setState({ fullPlayerOpen: false })} className="underline">
+              <button type="button" onClick={() => openSettings('lyrics')} className="underline">
                 Settings
-              </Link>
+              </button>
               .
             </p>
           )}

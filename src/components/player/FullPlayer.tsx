@@ -10,6 +10,7 @@ import { Button } from '@/components/ui/button'
 import { useArtColor } from '@/lib/artColor'
 import { cn } from '@/lib/utils'
 import { useCurrentTrack, usePlayerStore } from '@/player/store'
+import { openSettings } from '@/stores/ui'
 import { NextButton, PlayPauseButton, PreviousButton, RepeatButton, SeekBar, SeekTimes, ShuffleButton, VolumeControl } from './controls'
 import { LyricsView } from './LyricsView'
 import { QueueList } from './QueueList'
@@ -33,9 +34,17 @@ export function FullPlayer() {
   const wide = useMediaQuery('(min-width: 1024px)')
 
   useEffect(() => {
-    const onKey = (e: KeyboardEvent) => e.key === 'Escape' && close()
-    window.addEventListener('keydown', onKey)
-    return () => window.removeEventListener('keydown', onKey)
+    // Esc closes the player, unless a dialog or menu is open on top of it (that one closes instead).
+    // Capture phase: runs before Radix's own Esc handling has closed that layer.
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key !== 'Escape') return
+      const overlayOpen = document.querySelector(
+        '[role="dialog"][data-state="open"]:not([aria-label="Now playing"]), [role="menu"][data-state="open"], [role="listbox"][data-state="open"]',
+      )
+      if (!overlayOpen) close()
+    }
+    window.addEventListener('keydown', onKey, true)
+    return () => window.removeEventListener('keydown', onKey, true)
   }, [])
 
   // The queue was cleared from inside the player.
@@ -75,10 +84,15 @@ export function FullPlayer() {
         <span className="text-xs font-medium tracking-wider text-white/70 uppercase">Now playing</span>
         {/* On narrow screens lyrics and queue share the art's space, so opening one closes the other. */}
         <div className="flex items-center" onPointerDown={(e) => e.stopPropagation()}>
-          <Button variant="ghost" size="icon-lg" asChild className="text-white/60 hover:bg-white/10 hover:text-white">
-            <Link to="/settings" hash="equalizer" onClick={close} aria-label="Equalizer">
-              <MdEqualizer className="size-6" />
-            </Link>
+          {/* Opens Settings over the player, at the equalizer, so changes can be heard in place. */}
+          <Button
+            variant="ghost"
+            size="icon-lg"
+            onClick={() => openSettings('equalizer')}
+            aria-label="Equalizer"
+            className="text-white/60 hover:bg-white/10 hover:text-white"
+          >
+            <MdEqualizer className="size-6" />
           </Button>
           <Button
             variant="ghost"

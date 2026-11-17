@@ -1,28 +1,53 @@
-import { createFileRoute, useNavigate } from '@tanstack/react-router'
+import { useEffect, useRef } from 'react'
 import { MdLogout } from 'react-icons/md'
-import { EqualizerSettings } from '@/components/settings/EqualizerSettings'
-import { Row, SettingsGroup } from '@/components/settings/SettingsLayout'
+import { EqualizerSettings } from './EqualizerSettings'
+import { Row, SettingsGroup } from './SettingsLayout'
 import { Button } from '@/components/ui/button'
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Switch } from '@/components/ui/switch'
 import { useSessionStore } from '@/stores/session'
 import { maxBitRates, type StreamFormat, streamFormats, useSettingsStore } from '@/stores/settings'
+import { useUiStore } from '@/stores/ui'
 
-export const Route = createFileRoute('/_app/settings')({
-  staticData: { section: 'settings' },
-  component: SettingsPage,
-})
+/**
+ * Settings, as a modal opened from the top bar's gear (or deep-linked to a
+ * section, e.g. the full player's equalizer button). Always uses the Settings
+ * accent, whatever page it opens over.
+ */
+export function SettingsDialog() {
+  const open = useUiStore((s) => s.settingsOpen)
+  return (
+    <Dialog open={open} onOpenChange={(settingsOpen) => useUiStore.setState({ settingsOpen })}>
+      <DialogContent
+        data-section="settings"
+        className="flex max-h-[min(85dvh,52rem)] flex-col gap-0 overflow-hidden p-0 sm:max-w-xl"
+      >
+        <DialogHeader className="border-b border-border px-5 py-4">
+          <DialogTitle className="text-lg font-light">Settings</DialogTitle>
+          <DialogDescription className="sr-only">Server, playback, equalizer, lyrics and account settings</DialogDescription>
+        </DialogHeader>
+        {open && <SettingsContent />}
+      </DialogContent>
+    </Dialog>
+  )
+}
 
-function SettingsPage() {
+function SettingsContent() {
   const session = useSessionStore((s) => s.session)
   const logout = useSessionStore((s) => s.logout)
-  const navigate = useNavigate()
-  if (!session) return null
+  const section = useUiStore((s) => s.settingsSection)
+  const scrollRef = useRef<HTMLDivElement>(null)
 
+  useEffect(() => {
+    if (section) scrollRef.current?.querySelector(`#${section}`)?.scrollIntoView({ block: 'start' })
+  }, [section])
+
+  if (!session) return null
   const { credentials, server, user } = session
 
   return (
-    <div className="mx-auto max-w-2xl px-4 pb-10 md:px-6">
+    <div ref={scrollRef} className="min-h-0 overflow-y-auto px-5 pb-6">
       <SettingsGroup title="Server">
         <Row label="Address" value={credentials.url} />
         <Row label="Server" value={`${server.type} ${server.version}`} />
@@ -43,8 +68,8 @@ function SettingsPage() {
           <Button
             variant="outline"
             onClick={() => {
-              logout()
-              navigate({ to: '/login' })
+              useUiStore.setState({ settingsOpen: false })
+              logout() // AppShell redirects to /login
             }}
           >
             <MdLogout /> Sign out
@@ -101,7 +126,7 @@ function PlaybackSettings() {
 function LyricsSettings() {
   const { lrclib, set } = useSettingsStore()
   return (
-    <SettingsGroup title="Lyrics">
+    <SettingsGroup title="Lyrics" id="lyrics">
       <Row
         label="Find missing lyrics online"
         description="When your server has no lyrics for a song, look them up on lrclib.net. This sends the song's title, artist and album to that service."

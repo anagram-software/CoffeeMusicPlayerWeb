@@ -1,8 +1,9 @@
 import { Link } from '@tanstack/react-router'
-import { MdMenu, MdSearch } from 'react-icons/md'
+import { MdMenu, MdSearch, MdSettings } from 'react-icons/md'
 import { Button } from '@/components/ui/button'
 import { Sheet, SheetContent, SheetTitle } from '@/components/ui/sheet'
 import { type SectionId, sections } from '@/lib/sections'
+import { openSettings } from '@/stores/ui'
 import { Sidebar } from './Sidebar'
 
 interface TopBarProps {
@@ -39,6 +40,9 @@ export function TopBar({ section, drawerOpen, onDrawerOpenChange }: TopBarProps)
           </Link>
         </Button>
       )}
+      <Button variant="ghost" size="icon-lg" onClick={() => openSettings()} aria-label="Settings">
+        <MdSettings className="size-6" />
+      </Button>
     </header>
   )
 }

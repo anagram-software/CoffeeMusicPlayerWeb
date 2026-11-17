@@ -2,6 +2,7 @@ import { Navigate, Outlet } from '@tanstack/react-router'
 import { AnimatePresence } from 'motion/react'
 import { useEffect, useState } from 'react'
 import { FullPlayer } from '@/components/player/FullPlayer'
+import { SettingsDialog } from '@/components/settings/SettingsDialog'
 import { usePlayerShortcuts } from '@/hooks/usePlayerShortcuts'
 import { useCurrentSection } from '@/hooks/useCurrentSection'
 import { sections } from '@/lib/sections'
@@ -59,6 +60,7 @@ export function AppShell() {
       </div>
 
       <AnimatePresence>{fullPlayerOpen && <FullPlayer />}</AnimatePresence>
+      <SettingsDialog />
     </div>
   )
 }

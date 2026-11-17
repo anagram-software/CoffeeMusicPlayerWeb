@@ -135,6 +135,19 @@
     --section-accent: #ff4081;
     --section-accent-foreground: #ffffff;
 }
+/*
+ * Custom properties inherit as computed values, so --primary etc. (defined on
+ * <html> from --section-accent) must be re-derived wherever a nested
+ * data-section changes the accent, e.g. the Settings dialog over a Library page.
+ */
+[data-section] {
+    --primary: var(--section-accent);
+    --primary-foreground: var(--section-accent-foreground);
+    --ring: var(--section-accent);
+    --sidebar-primary: var(--section-accent);
+    --sidebar-primary-foreground: var(--section-accent-foreground);
+    --sidebar-ring: var(--section-accent);
+}
 [data-section="home"] { --section-accent: #ff5252; --section-accent-foreground: #ffffff; }
 [data-section="favorites"] { --section-accent: #ff4081; --section-accent-foreground: #ffffff; }
 [data-section="library"] { --section-accent: #448aff; --section-accent-foreground: #ffffff; }
