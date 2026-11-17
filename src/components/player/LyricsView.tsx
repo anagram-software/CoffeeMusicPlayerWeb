@@ -41,9 +41,9 @@ export function LyricsView({ track, className }: { track: Track; className?: str
       ) : lyrics.synced ? (
         <SyncedLines lines={lyrics.lines} />
       ) : (
-        <div className="h-full overflow-y-auto px-6 py-8 text-center">
+        <div className="h-full overflow-y-auto px-6 pt-2 pb-8 text-center">
           {lyrics.lines.map((l, i) => (
-            <p key={i} className={cn('min-h-[1.6em] text-lg leading-relaxed', isSectionHeader(l.text) ? 'mt-4 font-medium text-[#82b1ff]' : 'text-white/90')}>
+            <p key={i} className={cn('min-h-[1.6em] text-base leading-relaxed md:text-lg', isSectionHeader(l.text) ? 'mt-4 font-medium text-[#82b1ff]' : 'text-white/90')}>
               {l.text}
             </p>
           ))}
@@ -92,7 +92,7 @@ function SyncedLines({ lines }: { lines: LyricLine[] }) {
             player.seek((l.start ?? 0) / 1000)
           }}
           className={cn(
-            'block w-full py-1.5 text-xl leading-snug transition-all duration-300 md:text-2xl',
+            'block w-full py-1.5 text-lg leading-snug transition-all duration-300 md:text-xl',
             i === active ? 'scale-105 font-semibold text-white' : 'text-white/35 hover:text-white/70',
             !l.text && 'min-h-8',
           )}

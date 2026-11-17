@@ -9,6 +9,7 @@ import { useMediaQuery } from '@/hooks/useMediaQuery'
 import { Button } from '@/components/ui/button'
 import { useArtColor } from '@/lib/artColor'
 import { cn } from '@/lib/utils'
+import type { Track } from '@/player/queue'
 import { useCurrentTrack, usePlayerStore } from '@/player/store'
 import { NextButton, PlayPauseButton, PreviousButton, RepeatButton, SeekBar, SeekTimes, ShuffleButton, VolumeControl } from './controls'
 import { LyricsView } from './LyricsView'
@@ -25,11 +26,11 @@ const close = () => usePlayerStore.setState({ fullPlayerOpen: false })
 export function FullPlayer() {
   const track = useCurrentTrack()
   const tint = useArtColor(track?.coverArt) ?? '#2a2a2a'
-  const queueOpen = usePlayerStore((s) => s.queueOpen)
-  const lyricsOpen = usePlayerStore((s) => s.lyricsOpen)
+  const panel = usePlayerStore((s) => s.panel)
+  const togglePanel = (p: 'queue' | 'lyrics') => usePlayerStore.setState({ panel: panel === p ? null : p })
   const position = usePlayerStore((s) => `${s.index + 1}/${s.queue.length}`)
   const dragControls = useDragControls()
-  // Queue beside the art on wide screens (lg), in place of it on narrow ones.
+  // The queue/lyrics panel sits beside the art on wide screens (lg), in place of it on narrow ones.
   const wide = useMediaQuery('(min-width: 1024px)')
 
   useEffect(() => {
@@ -81,55 +82,49 @@ export function FullPlayer() {
           <MdKeyboardArrowDown className="size-7" />
         </Button>
         <span className="text-xs font-medium tracking-wider text-white/70 uppercase">Now playing</span>
-        {/* On narrow screens lyrics and queue share the art's space, so opening one closes the other. */}
         <div className="flex items-center" onPointerDown={(e) => e.stopPropagation()}>
           <Button
             variant="ghost"
             size="icon-lg"
-            onClick={() => usePlayerStore.setState({ lyricsOpen: !lyricsOpen, ...(!wide && { queueOpen: false }) })}
-            aria-label={lyricsOpen ? 'Hide lyrics' : 'Show lyrics'}
-            aria-pressed={lyricsOpen}
-            className={cn('hover:bg-white/10', lyricsOpen ? 'text-white' : 'text-white/60')}
+            onClick={() => togglePanel('lyrics')}
+            aria-label={panel === 'lyrics' ? 'Hide lyrics' : 'Show lyrics'}
+            aria-pressed={panel === 'lyrics'}
+            className={cn('hover:bg-white/10', panel === 'lyrics' ? 'text-white' : 'text-white/60')}
           >
             <MdLyrics className="size-6" />
           </Button>
           <Button
             variant="ghost"
             size="icon-lg"
-            onClick={() => usePlayerStore.setState({ queueOpen: !queueOpen, ...(!wide && { lyricsOpen: false }) })}
-            aria-label={queueOpen ? 'Hide queue' : 'Show queue'}
-            aria-pressed={queueOpen}
-            className={cn('hover:bg-white/10', queueOpen ? 'text-white' : 'text-white/60')}
+            onClick={() => togglePanel('queue')}
+            aria-label={panel === 'queue' ? 'Hide queue' : 'Show queue'}
+            aria-pressed={panel === 'queue'}
+            className={cn('hover:bg-white/10', panel === 'queue' ? 'text-white' : 'text-white/60')}
           >
             <MdQueueMusic className="size-6" />
           </Button>
         </div>
       </header>
 
-      <div className={cn('relative grid min-h-0 flex-1 grid-cols-[minmax(0,1fr)]', queueOpen && wide && 'grid-cols-[minmax(0,1fr)_26rem]')}>
+      <div className={cn('relative grid min-h-0 flex-1 grid-cols-[minmax(0,1fr)]', panel && wide && 'grid-cols-[minmax(0,1fr)_26rem]')}>
         <div className="flex min-h-0 flex-col items-center justify-center gap-6 px-6 pb-8 md:gap-8">
-          {/* Art or lyrics (hidden on small screens while the queue is shown). Dragging the art closes the player; lyrics scroll instead. */}
+          {/* Art (hidden on small screens while the panel is shown). Dragging it down closes the player. */}
           <div
             className={cn(
-              'flex min-h-0 w-full flex-1 items-center justify-center [container-type:size]',
-              !lyricsOpen && 'touch-none',
-              queueOpen && !wide && 'hidden',
+              'flex min-h-0 w-full flex-1 touch-none items-center justify-center [container-type:size]',
+              panel && !wide && 'hidden',
             )}
-            onPointerDown={lyricsOpen ? undefined : startDrag}
+            onPointerDown={startDrag}
           >
-            {lyricsOpen ? (
-              <LyricsView track={track} className="h-full max-w-2xl" />
-            ) : (
-              /* Square, as large as fits both ways (cq units = this container's size) */
-              <CoverArt
-                id={track.coverArt}
-                size={1000}
-                className="size-[min(100cqw,100cqh,32rem)] rounded-lg shadow-2xl shadow-black/60"
-              />
-            )}
+            {/* Square, as large as fits both ways (cq units = this container's size) */}
+            <CoverArt
+              id={track.coverArt}
+              size={1000}
+              className="size-[min(100cqw,100cqh,32rem)] rounded-lg shadow-2xl shadow-black/60"
+            />
           </div>
 
-          {queueOpen && !wide && <QueueList className="w-full flex-1" />}
+          {panel && !wide && <SidePanel panel={panel} track={track} className="w-full flex-1" />}
 
           <div className="flex w-full max-w-xl shrink-0 flex-col gap-4">
             {/* Heart · title · menu, as in the Android player */}
@@ -166,9 +161,22 @@ export function FullPlayer() {
           </div>
         </div>
 
-        {queueOpen && wide && <QueueList className="border-l border-white/10 bg-black/20" />}
+        {panel && wide && <SidePanel panel={panel} track={track} />}
       </div>
     </motion.div>
+  )
+}
+
+/** The queue or the lyrics: one panel, one at a time. */
+function SidePanel({ panel, track, className }: { panel: 'queue' | 'lyrics'; track: Track; className?: string }) {
+  if (panel === 'queue') return <QueueList className={className} />
+  return (
+    <div className={cn('flex min-h-0 flex-col', className)}>
+      <div className="px-4 py-3">
+        <h2 className="text-sm font-medium tracking-wider text-white uppercase">Lyrics</h2>
+      </div>
+      <LyricsView track={track} className="min-h-0 flex-1 rounded-none bg-transparent" />
+    </div>
   )
 }
 

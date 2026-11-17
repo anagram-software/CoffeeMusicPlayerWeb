@@ -15,7 +15,7 @@ export function PlayerBar() {
   const track = useCurrentTrack()
   const tint = useArtColor(track?.coverArt)
   const progress = usePlayerStore((s) => (s.duration ? (s.currentTime / s.duration) * 100 : 0))
-  const openFull = (queue = false) => usePlayerStore.setState({ fullPlayerOpen: true, queueOpen: queue })
+  const openFull = (queue = false) => usePlayerStore.setState({ fullPlayerOpen: true, ...(queue && { panel: 'queue' as const }) })
 
   return (
     <footer
