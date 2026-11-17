@@ -1,8 +1,9 @@
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { createFileRoute, Link, type LinkProps } from '@tanstack/react-router'
-import { type ReactNode, useState } from 'react'
-import { MdChevronRight, MdShuffle } from 'react-icons/md'
+import { type ReactNode, useCallback, useEffect, useRef, useState } from 'react'
+import { MdChevronLeft, MdChevronRight, MdShuffle } from 'react-icons/md'
 import { AlbumCard, PlaylistCard } from '@/components/library/AlbumCard'
+import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
 import { type AlbumSort, albumPreviewQuery, playlistsQuery, randomSongsQuery } from '@/lib/subsonic/queries'
 import { player } from '@/player/engine'
@@ -105,17 +106,56 @@ function PlaylistRow() {
   )
 }
 
-/** A titled, horizontally scrolling row of cards. */
+/** A titled, horizontally scrolling row of cards, with ‹ › buttons that move one card at a time. */
 function Row({ title, seeAll, loading, children }: { title: string; seeAll: LinkProps; loading: boolean; children: ReactNode }) {
+  const scrollerRef = useRef<HTMLDivElement>(null)
+  const [edges, setEdges] = useState({ start: true, end: true })
+
+  // Track whether there's more to scroll either way, to disable the arrows at the ends.
+  const updateEdges = useCallback(() => {
+    const el = scrollerRef.current
+    if (!el) return
+    setEdges({ start: el.scrollLeft <= 1, end: el.scrollLeft + el.clientWidth >= el.scrollWidth - 1 })
+  }, [])
+
+  useEffect(() => {
+    const el = scrollerRef.current
+    if (!el) return
+    updateEdges()
+    const ro = new ResizeObserver(updateEdges)
+    ro.observe(el)
+    return () => ro.disconnect()
+  }, [updateEdges, loading])
+
+  const step = (dir: 1 | -1) => {
+    const el = scrollerRef.current
+    const item = el?.firstElementChild as HTMLElement | null
+    if (!el || !item) return
+    const gap = parseFloat(getComputedStyle(el).columnGap) || 0
+    el.scrollBy({ left: dir * (item.offsetWidth + gap), behavior: 'smooth' })
+  }
+
   return (
     <section>
-      <div className="mb-3 flex items-center justify-between">
+      <div className="mb-3 flex items-center justify-between gap-2">
         <h2 className="text-xs font-medium tracking-wider text-section uppercase">{title}</h2>
-        <Link {...seeAll} className="flex items-center text-xs text-muted-foreground hover:text-foreground">
-          See all <MdChevronRight className="size-4" />
-        </Link>
+        <div className="flex items-center gap-1">
+          <Button variant="ghost" size="icon-sm" onClick={() => step(-1)} disabled={edges.start} aria-label={`Scroll ${title} left`}>
+            <MdChevronLeft className="size-5" />
+          </Button>
+          <Button variant="ghost" size="icon-sm" onClick={() => step(1)} disabled={edges.end} aria-label={`Scroll ${title} right`}>
+            <MdChevronRight className="size-5" />
+          </Button>
+          <Link {...seeAll} className="ml-2 flex items-center text-xs text-muted-foreground hover:text-foreground">
+            See all
+          </Link>
+        </div>
       </div>
-      <div className="-mx-4 flex snap-x scroll-px-4 gap-4 overflow-x-auto px-4 pb-2 md:-mx-6 md:scroll-px-6 md:px-6 [scrollbar-width:thin]">
+      <div
+        ref={scrollerRef}
+        onScroll={updateEdges}
+        className="-mx-4 flex snap-x scroll-px-4 gap-4 overflow-x-auto px-4 pb-2 [scrollbar-width:none] md:-mx-6 md:scroll-px-6 md:px-6 [&::-webkit-scrollbar]:hidden"
+      >
         {loading
           ? Array.from({ length: 8 }, (_, i) => <Skeleton key={i} className="aspect-square w-40 shrink-0 rounded-md md:w-44" />)
           : children}
