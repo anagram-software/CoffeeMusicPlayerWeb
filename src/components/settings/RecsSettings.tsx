@@ -3,7 +3,7 @@ import { useState } from 'react'
 import { MdCheckCircle, MdErrorOutline } from 'react-icons/md'
 import { Row, SettingsGroup } from './SettingsLayout'
 import { Input } from '@/components/ui/input'
-import { normaliseRecsUrl } from '@/lib/recs/client'
+import { normaliseRecsUrl, type RecsClient } from '@/lib/recs/client'
 import { recsStatusQuery } from '@/lib/recs/queries'
 import { useRecs } from '@/lib/recs/useRecs'
 import { useSettingsStore } from '@/stores/settings'
@@ -49,8 +49,11 @@ function CommitInput({ value, onCommit, ...props }: { value: string; onCommit: (
 
 function RecsStatusRow() {
   const recs = useRecs()
-  const { data, error, isPending } = useQuery({ ...recsStatusQuery(recs!), enabled: !!recs, retry: false })
-  if (!recs) return null
+  return recs ? <RecsStatus recs={recs} /> : null
+}
+
+function RecsStatus({ recs }: { recs: RecsClient }) {
+  const { data, error, isPending } = useQuery({ ...recsStatusQuery(recs), retry: false })
   return (
     <Row label="Connection">
       <span className="flex min-w-0 items-center gap-1.5 text-sm text-muted-foreground">
