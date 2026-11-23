@@ -1,4 +1,5 @@
 import { MutationCache, QueryCache, QueryClient } from '@tanstack/react-query'
+import { RecsError } from '@/lib/recs/client'
 import { SubsonicError } from '@/lib/subsonic/client'
 import { useSessionStore } from '@/stores/session'
 
@@ -14,7 +15,8 @@ export const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
       staleTime: 5 * 60 * 1000,
-      retry: (count, error) => !(error instanceof SubsonicError && error.isAuthError) && count < 2,
+      retry: (count, error) =>
+        !(error instanceof SubsonicError && error.isAuthError) && !(error instanceof RecsError && error.isClientError) && count < 2,
     },
   },
 })

@@ -1,6 +1,7 @@
 import { useEffect, useRef } from 'react'
 import { MdLogout } from 'react-icons/md'
 import { EqualizerSettings } from './EqualizerSettings'
+import { RecsSettings } from './RecsSettings'
 import { Row, SettingsGroup } from './SettingsLayout'
 import { Button } from '@/components/ui/button'
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog'
@@ -25,7 +26,7 @@ export function SettingsDialog() {
       >
         <DialogHeader className="border-b border-border px-5 py-4">
           <DialogTitle className="text-lg font-light">Settings</DialogTitle>
-          <DialogDescription className="sr-only">Server, playback, equalizer, lyrics and account settings</DialogDescription>
+          <DialogDescription className="sr-only">Server, playback, equalizer, lyrics, recommendations and account settings</DialogDescription>
         </DialogHeader>
         {open && <SettingsContent />}
       </DialogContent>
@@ -62,6 +63,7 @@ function SettingsContent() {
       <PlaybackSettings />
       <EqualizerSettings />
       <LyricsSettings />
+      <RecsSettings />
 
       <SettingsGroup title="Account">
         <Row label="Signed in as" value={user.isAdmin ? `${user.name} (admin)` : user.name} />

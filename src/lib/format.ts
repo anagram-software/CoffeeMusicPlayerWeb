@@ -24,3 +24,15 @@ export function stripHtml(html: string): string {
   const doc = new DOMParser().parseFromString(html, 'text/html')
   return (doc.body.textContent ?? '').trim()
 }
+
+const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
+
+/** MusicBrainz partial dates: "2026" → "2026", "2026-03" → "Mar 2026", "2026-03-04" → "4 Mar 2026". */
+export function formatPartialDate(date: string | null | undefined): string {
+  if (!date) return ''
+  const [year, month, day] = date.split('-').map(Number)
+  if (!year) return date
+  const m = month ? MONTHS[month - 1] : undefined
+  if (!m) return String(year)
+  return day ? `${day} ${m} ${year}` : `${m} ${year}`
+}

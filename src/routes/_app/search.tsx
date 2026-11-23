@@ -6,6 +6,7 @@ import { z } from 'zod'
 import { TabStrip } from '@/components/layout/TabStrip'
 import { TopBarSlot } from '@/components/layout/TopBarSlot'
 import { AlbumCard, ArtistCard } from '@/components/library/AlbumCard'
+import { Chip } from '@/components/library/Chip'
 import { SongRow } from '@/components/library/SongRow'
 import { EmptyState, ErrorState, GridSkeleton, ListSkeleton, SectionTitle } from '@/components/library/states'
 import { useDebouncedValue } from '@/hooks/useDebouncedValue'
@@ -238,22 +239,5 @@ function BySource<T extends { id: string }>({
         <p className="py-6 text-sm text-muted-foreground">Nothing in your library for “{query}”.</p>
       )}
     </div>
-  )
-}
-
-function Chip({ active, onClick, title, children }: { active: boolean; onClick: () => void; title?: string; children: ReactNode }) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      aria-pressed={active}
-      title={title}
-      className={cn(
-        'inline-flex h-7 items-center gap-1 rounded-full border px-3 text-xs font-medium transition-colors',
-        active ? 'border-transparent bg-foreground text-background' : 'border-border text-muted-foreground hover:text-foreground',
-      )}
-    >
-      {children}
-    </button>
   )
 }

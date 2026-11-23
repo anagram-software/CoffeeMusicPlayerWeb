@@ -24,6 +24,10 @@ interface SettingsState {
   scrobble: boolean
   /** Look up lyrics the server doesn't have on lrclib.net (sends title/artist/album there). */
   lrclib: boolean
+  /** Coffee Recs (recommendation service) base URL. The Discover page asks for setup until this and the key are set. */
+  recsUrl: string
+  /** Coffee Recs bearer key (its API_KEY). */
+  recsKey: string
   set: (partial: Partial<Omit<SettingsState, 'set'>>) => void
 }
 
@@ -38,9 +42,11 @@ export const useSettingsStore = create<SettingsState>()(
       maxBitRate: 0,
       scrobble: true,
       lrclib: false,
+      recsUrl: 'https://mrecs.udesh.xyz',
+      recsKey: '',
       set: (partial) => set(partial),
     }),
-    { name: 'coffee.settings', partialize: ({ theme, showQuality, searchSource, hideCovers, streamFormat, maxBitRate, scrobble, lrclib }) => ({
+    { name: 'coffee.settings', partialize: ({ theme, showQuality, searchSource, hideCovers, streamFormat, maxBitRate, scrobble, lrclib, recsUrl, recsKey }) => ({
         theme,
         showQuality,
         searchSource,
@@ -49,6 +55,8 @@ export const useSettingsStore = create<SettingsState>()(
         maxBitRate,
         scrobble,
         lrclib,
+        recsUrl,
+        recsKey,
       }) },
   ),
 )

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { formatDuration, formatTotalDuration, plural, stripHtml } from './format'
+import { formatDuration, formatPartialDate, formatTotalDuration, plural, stripHtml } from './format'
 
 describe('format', () => {
   it('formats track durations', () => {
@@ -18,4 +18,14 @@ describe('format', () => {
   it('strips html', () => {
     expect(stripHtml('Great band. <a href="https://last.fm">Read more on Last.fm</a>')).toBe('Great band. Read more on Last.fm')
   })
+})
+
+describe('formatPartialDate', () => {
+  it.each([
+    ['2026', '2026'],
+    ['2026-03', 'Mar 2026'],
+    ['2026-03-04', '4 Mar 2026'],
+    ['', ''],
+    [null, ''],
+  ])('%s → %s', (input, expected) => expect(formatPartialDate(input)).toBe(expected))
 })

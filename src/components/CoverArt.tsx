@@ -6,6 +6,8 @@ import { useSubsonic } from '@/stores/session'
 interface CoverArtProps {
   /** Subsonic coverArt id (album, song or artist). */
   id: string | undefined
+  /** An image URL from elsewhere (e.g. the Cover Art Archive), used instead of `id`. */
+  src?: string | null
   /** Requested image size in px; ask for ~2x the displayed size for sharp HiDPI art. */
   size: number
   alt?: string
@@ -14,9 +16,9 @@ interface CoverArtProps {
 }
 
 /** Album/artist art on the #444 placeholder from the Android app. */
-export function CoverArt({ id, size, alt = '', fallback = 'music', className }: CoverArtProps) {
+export function CoverArt({ id, src: url, size, alt = '', fallback = 'music', className }: CoverArtProps) {
   const client = useSubsonic()
-  const src = client.coverArtUrl(id, size)
+  const src = url ?? client.coverArtUrl(id, size)
   const [failedSrc, setFailedSrc] = useState<string>()
   const Icon = fallback === 'person' ? MdPerson : MdMusicNote
 
