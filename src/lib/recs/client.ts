@@ -12,7 +12,11 @@ export interface RecItem {
   score?: number | null
   /** Why it's recommended, as a path from your library: ["You have X", "X and Y are …"]. */
   reason: string[]
-  /** Cover Art Archive URL (release groups, and songs whose release has art). */
+  /**
+   * Release groups and songs: Cover Art Archive URL (when the release has art). Artists: their
+   * picture, Navidrome's public share link for library artists, otherwise Apple Music's (null
+   * until the service's images job has looked the artist up).
+   */
   cover_url?: string | null
   /** MusicBrainz partial date: "2026", "2026-03" or "2026-03-14". */
   first_release_date?: string | null

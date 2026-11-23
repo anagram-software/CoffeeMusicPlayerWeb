@@ -1,4 +1,4 @@
-import type { ReactNode } from 'react'
+import { type ReactNode, useState } from 'react'
 import { MdClose, MdOpenInNew, MdPlayArrow, MdThumbUp, MdThumbUpOffAlt } from 'react-icons/md'
 import { CoverArt } from '@/components/CoverArt'
 import { formatDuration, formatPartialDate } from '@/lib/format'
@@ -72,20 +72,44 @@ function MusicBrainzLink({ item, className }: { item: RecItem; className?: strin
   )
 }
 
-/** Artists have no artwork in MusicBrainz: a coloured initial instead, its hue from the name. */
-function ArtistAvatar({ name }: { name: string }) {
+/**
+ * Coffee Recs' artist picture (Navidrome's for library artists, Apple Music's otherwise), over a
+ * coloured initial whose hue comes from the name. The initial shows until the picture loads, and
+ * stays when there is none (the service hasn't looked the artist up yet) or it fails.
+ */
+function ArtistAvatar({ name, src }: { name: string; src?: string | null }) {
+  const [state, setState] = useState<{ src: string; status: 'loaded' | 'failed' }>()
   let hash = 0
   for (const ch of name) hash = (hash * 31 + ch.charCodeAt(0)) | 0
   const initial = [...name.replace(/^the\s+/i, '')][0]?.toUpperCase() ?? '?'
+  const url = src ? appleThumb(src, 96) : undefined
+  const status = state && state.src === url ? state.status : undefined
   return (
     <div
       aria-hidden
-      className="flex size-12 shrink-0 items-center justify-center rounded-full text-lg font-light text-white"
+      className="relative flex size-12 shrink-0 items-center justify-center overflow-hidden rounded-full text-lg font-light text-white"
       style={{ background: `hsl(${Math.abs(hash) % 360} 40% 42%)` }}
     >
       {initial}
+      {url && status !== 'failed' && (
+        <img
+          src={url}
+          alt=""
+          loading="lazy"
+          decoding="async"
+          draggable={false}
+          onLoad={() => setState({ src: url, status: 'loaded' })}
+          onError={() => setState({ src: url, status: 'failed' })}
+          className={cn('absolute inset-0 size-full object-cover transition-opacity duration-300', status === 'loaded' ? 'opacity-100' : 'opacity-0')}
+        />
+      )}
     </div>
   )
+}
+
+/** Apple Music artwork URLs end in "/<w>x<h>bb.jpg" and serve any size; the service asks for 600. */
+function appleThumb(url: string, size: number): string {
+  return /mzstatic\.com\//.test(url) ? url.replace(/\/\d+x\d+bb\.(jpg|png|webp)$/, `/${size}x${size}bb.$1`) : url
 }
 
 const rowClass =
@@ -110,7 +134,7 @@ export function RecArtistRow({ item, handlers, onOpen }: { item: RecItem; handle
   const reason = reasonText(item)
   return (
     <div {...activate(() => onOpen(item))} className={rowClass} title={reason || undefined}>
-      <ArtistAvatar name={item.name} />
+      <ArtistAvatar name={item.name} src={item.cover_url} />
       <div className="min-w-0 flex-1">
         <div className="flex items-center gap-2">
           <span className="truncate text-sm">{item.name}</span>
